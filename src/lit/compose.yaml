@@ -1,0 +1,13 @@
+﻿services:
+  lit:
+    image: lit
+    build:
+      context: .
+      dockerfile: lit/Dockerfile
+
+  litwebapp:
+    image: litwebapp
+    build:
+      context: .
+      dockerfile: litWebApp/Dockerfile
+

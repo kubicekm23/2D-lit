@@ -1,0 +1,71 @@
+erDiagram
+    user {
+        int id PK
+        varchar username
+        varchar password
+        decimal credits
+    }
+    ship {
+        int id PK
+        varchar name
+        int userId FK
+        int shipTypeId FK
+        int mnozstviPaliva
+    }
+    shipType {
+        int id PK
+        varchar name
+        int cargoHold
+        varchar pathToTextures
+        int maxPaliva
+    }
+    cargoType {
+        int id PK
+        varchar name
+        int vaha
+    }
+    cargo {
+        int id PK
+        int shipId FK
+        int cargoTypeId FK
+        int quantity
+    }
+    station {
+        int id PK
+        varchar name
+        float coordinateX
+        float coordinateY
+        int hangarLimit
+    }
+    cargoTypeValue {
+        int cargoTypeId PK
+        int stationId PK
+        decimal value
+    }
+    hangarSpot {
+        int stationId PK
+        int shipId PK
+    }
+
+    planet {
+        int id pk
+        string name
+        float coordinateX
+        float coordinateY
+        int cargoTypeId FK
+    }
+
+    planetAffectingStation {
+        int planetId PK
+        int stationId PK
+    }
+
+    user ||--o{ ship : owns
+    ship }o--|| shipType : is_type
+    ship ||--o{ cargo : carries
+    cargo }o--|| cargoType : of_type
+    station ||--o{ cargoTypeValue : sets_price
+    station ||--o{ hangarSpot : has
+    ship ||--o| hangarSpot : docks
+    planet ||--o| planetAffectingStation : affectsPrices
+    planetAffectingStation |o--|| station : isAffectedBy
