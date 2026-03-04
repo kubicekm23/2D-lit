@@ -21,3 +21,7 @@ FROM base AS final
 WORKDIR /app
 COPY --from=publish /app/publish .
 ENTRYPOINT ["dotnet", "litWebApp.dll"]
+
+FROM nginx:alpine
+COPY index.html /usr/share/nginx/html
+EXPOSE 80
