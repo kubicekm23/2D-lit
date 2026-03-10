@@ -16,7 +16,7 @@ public class GameApiController : ControllerBase
 {
     private readonly AppDbContext _db;
     private const float StationInteractionRange = 500f;
-    private const float FuelPricePerUnit = 5m;
+    private const decimal FuelPricePerUnit = 5m;
 
     public GameApiController(AppDbContext db)
     {

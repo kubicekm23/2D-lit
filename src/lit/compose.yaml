@@ -6,19 +6,25 @@ services:
       POSTGRES_USER: lit
       POSTGRES_PASSWORD: litpass
     ports:
-      - "5432:5432"
+      - "5433:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U lit -d litgame"]
+      interval: 2s
+      timeout: 5s
+      retries: 10
 
   litwebapp:
     image: litwebapp
     build:
-      context: .
-      dockerfile: litWebApp/Dockerfile
+      context: ./litWebApp
+      dockerfile: Dockerfile
     ports:
       - "8080:8080"
     depends_on:
-      - db
+      db:
+        condition: service_healthy
     environment:
       ConnectionStrings__DefaultConnection: "Host=db;Port=5432;Database=litgame;Username=lit;Password=litpass"
 

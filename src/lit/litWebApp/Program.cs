@@ -30,7 +30,7 @@ public class Program
         using (var scope = app.Services.CreateScope())
         {
             var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-            await db.Database.MigrateAsync();
+            await db.Database.EnsureCreatedAsync();
             await SeedDataService.SeedAsync(db);
             await WorldGenerationService.GenerateWorldAsync(db);
         }
@@ -42,7 +42,6 @@ public class Program
             app.UseHsts();
         }
 
-        app.UseHttpsRedirection();
         app.UseRouting();
 
         app.UseAuthentication();
