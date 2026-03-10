@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace litWebApp.Models.DbModels;
 
@@ -18,6 +19,18 @@ public class ShipTypeModel
 
     public int MaxPaliva { get; set; }
 
+    public float MaxSpeed { get; set; }
+    public float ThrustPower { get; set; }
+    public float FuelEfficiency { get; set; }
+    public float TurnRate { get; set; }
+
+    [Column(TypeName = "decimal(18,2)")]
+    public decimal Price { get; set; }
+
+    [MaxLength(512)]
+    public string Description { get; set; } = "";
+
     // Navigation
     public ICollection<ShipModel> Ships { get; set; } = new List<ShipModel>();
+    public ICollection<StationShipStockModel> StationStocks { get; set; } = new List<StationShipStockModel>();
 }

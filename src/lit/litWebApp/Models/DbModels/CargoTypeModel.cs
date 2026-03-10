@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace litWebApp.Models.DbModels;
 
@@ -12,6 +13,9 @@ public class CargoTypeModel
     public string Name { get; set; } = null!;
 
     public int Vaha { get; set; }
+
+    [Column(TypeName = "decimal(18,2)")]
+    public decimal BasePrice { get; set; }
 
     // Navigation
     public ICollection<CargoModel> Cargos { get; set; } = new List<CargoModel>();

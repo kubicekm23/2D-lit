@@ -17,6 +17,8 @@ public class AppDbContext : DbContext
         public DbSet<HangarSpotModel> HangarSpots => Set<HangarSpotModel>();
         public DbSet<PlanetModel> Planets => Set<PlanetModel>();
         public DbSet<PlanetAffectingStationModel> PlanetAffectingStations => Set<PlanetAffectingStationModel>();
+        public DbSet<VisitedStationModel> VisitedStations => Set<VisitedStationModel>();
+        public DbSet<StationShipStockModel> StationShipStocks => Set<StationShipStockModel>();
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -32,6 +34,12 @@ public class AppDbContext : DbContext
 
             modelBuilder.Entity<PlanetAffectingStationModel>()
                 .HasKey(e => new { e.PlanetId, e.StationId });
+
+            modelBuilder.Entity<VisitedStationModel>()
+                .HasKey(e => new { e.UserId, e.StationId });
+
+            modelBuilder.Entity<StationShipStockModel>()
+                .HasKey(e => new { e.StationId, e.ShipTypeId });
 
             // ── Relationships ──────────────────────────────────
 
@@ -111,5 +119,40 @@ public class AppDbContext : DbContext
                 .WithMany(s => s.PlanetAffectingStations)
                 .HasForeignKey(pas => pas.StationId)
                 .OnDelete(DeleteBehavior.Cascade);
+
+            // User → VisitedStation  (one-to-many)
+            modelBuilder.Entity<VisitedStationModel>()
+                .HasOne(vs => vs.User)
+                .WithMany(u => u.VisitedStations)
+                .HasForeignKey(vs => vs.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // Station → VisitedStation  (one-to-many)
+            modelBuilder.Entity<VisitedStationModel>()
+                .HasOne(vs => vs.Station)
+                .WithMany(s => s.VisitedByUsers)
+                .HasForeignKey(vs => vs.StationId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // Station → StationShipStock  (one-to-many)
+            modelBuilder.Entity<StationShipStockModel>()
+                .HasOne(ss => ss.Station)
+                .WithMany(s => s.ShipStocks)
+                .HasForeignKey(ss => ss.StationId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // ShipType → StationShipStock  (one-to-many)
+            modelBuilder.Entity<StationShipStockModel>()
+                .HasOne(ss => ss.ShipType)
+                .WithMany(st => st.StationStocks)
+                .HasForeignKey(ss => ss.ShipTypeId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            // User → ActiveShip  (many-to-one, optional)
+            modelBuilder.Entity<UserModel>()
+                .HasOne(u => u.ActiveShip)
+                .WithMany()
+                .HasForeignKey(u => u.ActiveShipId)
+                .OnDelete(DeleteBehavior.SetNull);
         }
     }

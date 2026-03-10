@@ -19,4 +19,6 @@ public class StationModel
     public ICollection<CargoTypeValueModel> CargoTypeValues { get; set; } = new List<CargoTypeValueModel>();
     public ICollection<HangarSpotModel> HangarSpots { get; set; } = new List<HangarSpotModel>();
     public ICollection<PlanetAffectingStationModel> PlanetAffectingStations { get; set; } = new List<PlanetAffectingStationModel>();
+    public ICollection<StationShipStockModel> ShipStocks { get; set; } = new List<StationShipStockModel>();
+    public ICollection<VisitedStationModel> VisitedByUsers { get; set; } = new List<VisitedStationModel>();
 }

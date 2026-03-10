@@ -14,11 +14,17 @@ public class UserModel
 
     [Required]
     [MaxLength(255)]
-    public string Password { get; set; } = null!;
+    public string PasswordHash { get; set; } = null!;
 
     [Column(TypeName = "decimal(18,2)")]
     public decimal Credits { get; set; }
 
+    public int? ActiveShipId { get; set; }
+
     // Navigation
+    [ForeignKey(nameof(ActiveShipId))]
+    public ShipModel? ActiveShip { get; set; }
+
     public ICollection<ShipModel> Ships { get; set; } = new List<ShipModel>();
+    public ICollection<VisitedStationModel> VisitedStations { get; set; } = new List<VisitedStationModel>();
 }
