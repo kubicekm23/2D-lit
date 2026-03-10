@@ -1,3 +1,6 @@
+using litWebApp.Models;
+using Microsoft.EntityFrameworkCore;
+
 namespace litWebApp;
 
 public class Program
@@ -9,6 +12,9 @@ public class Program
         // Add services to the container.
         builder.Services.AddControllersWithViews();
 
+        builder.Services.AddDbContext<AppDbContext>(options =>
+            options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
+        
         var app = builder.Build();
 
         // Configure the HTTP request pipeline.
