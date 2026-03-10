@@ -59,10 +59,14 @@ public class Program
 
     private static string GetConnectionString(IConfiguration config)
     {
+        // Load .env file if it exists (check common locations)
+        LoadEnvFile();
+
         // 1. Try DATABASE_URL (postgres://user:pass@host:port/db)
         var databaseUrl = Environment.GetEnvironmentVariable("DATABASE_URL");
         if (!string.IsNullOrEmpty(databaseUrl))
         {
+            // Strip scheme prefix variations (postgres:// or postgresql://)
             var uri = new Uri(databaseUrl);
             var userInfo = uri.UserInfo.Split(':');
             var host = uri.Host;
@@ -81,5 +85,42 @@ public class Program
         throw new InvalidOperationException(
             "No database connection configured. Set DATABASE_URL environment variable " +
             "or ConnectionStrings__DefaultConnection.");
+    }
+
+    private static void LoadEnvFile()
+    {
+        // Search for .env in current dir and parent directories
+        string[] searchPaths =
+        {
+            ".env",
+            "../.env",
+            "../../.env",
+            "../../../.env",
+        };
+
+        foreach (var path in searchPaths)
+        {
+            var fullPath = Path.GetFullPath(path);
+            if (!File.Exists(fullPath)) continue;
+
+            foreach (var line in File.ReadAllLines(fullPath))
+            {
+                var trimmed = line.Trim();
+                if (string.IsNullOrEmpty(trimmed) || trimmed.StartsWith('#')) continue;
+
+                var eqIndex = trimmed.IndexOf('=');
+                if (eqIndex < 0) continue;
+
+                var key = trimmed[..eqIndex].Trim();
+                var value = trimmed[(eqIndex + 1)..].Trim();
+
+                // Only set if not already defined (env vars take precedence)
+                if (string.IsNullOrEmpty(Environment.GetEnvironmentVariable(key)))
+                {
+                    Environment.SetEnvironmentVariable(key, value);
+                }
+            }
+            break; // Use first .env found
+        }
     }
 }
