@@ -1,8 +1,42 @@
-﻿@{
-    ViewData["Title"] = "Home Page";
+@{
+    Layout = null;
 }
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>2D:Lit</title>
+    <link rel="stylesheet" href="/css/game.css" />
+</head>
+<body>
+    <canvas id="gameCanvas"></canvas>
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
-</div>
+    <!-- HUD -->
+    <div id="hud">
+        <div id="hud-top-left">
+            <div id="hud-speed">SPD: 0 / 0</div>
+            <div id="hud-coords">X:0 Y:0</div>
+        </div>
+        <div id="hud-top-right">
+            <div id="hud-fuel">FUEL: 100%</div>
+            <div id="hud-credits">CR: 0</div>
+        </div>
+        <div id="hud-bottom">
+            <div id="hud-station"></div>
+        </div>
+    </div>
+
+    <!-- Station overlay -->
+    <div id="station-overlay" style="display:none;"></div>
+
+    <!-- Map overlay -->
+    <div id="map-overlay" style="display:none;">
+        <div class="map-container">
+            <canvas id="map-canvas"></canvas>
+        </div>
+    </div>
+
+    <script type="module" src="/js/game/main.js"></script>
+</body>
+</html>
