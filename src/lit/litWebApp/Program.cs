@@ -14,8 +14,9 @@ public class Program
         // Add services to the container.
         builder.Services.AddControllersWithViews();
 
+        var connectionString = GetConnectionString(builder.Configuration);
         builder.Services.AddDbContext<AppDbContext>(options =>
-            options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
+            options.UseNpgsql(connectionString));
 
         builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
             .AddCookie(options =>
@@ -54,5 +55,31 @@ public class Program
             .WithStaticAssets();
 
         app.Run();
+    }
+
+    private static string GetConnectionString(IConfiguration config)
+    {
+        // 1. Try DATABASE_URL (postgres://user:pass@host:port/db)
+        var databaseUrl = Environment.GetEnvironmentVariable("DATABASE_URL");
+        if (!string.IsNullOrEmpty(databaseUrl))
+        {
+            var uri = new Uri(databaseUrl);
+            var userInfo = uri.UserInfo.Split(':');
+            var host = uri.Host;
+            var port = uri.Port > 0 ? uri.Port : 5432;
+            var database = uri.AbsolutePath.TrimStart('/');
+            var username = userInfo[0];
+            var password = userInfo.Length > 1 ? userInfo[1] : "";
+            return $"Host={host};Port={port};Database={database};Username={username};Password={password}";
+        }
+
+        // 2. Try standard ConnectionStrings:DefaultConnection
+        var connStr = config.GetConnectionString("DefaultConnection");
+        if (!string.IsNullOrEmpty(connStr))
+            return connStr;
+
+        throw new InvalidOperationException(
+            "No database connection configured. Set DATABASE_URL environment variable " +
+            "or ConnectionStrings__DefaultConnection.");
     }
 }
