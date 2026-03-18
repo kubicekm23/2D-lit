@@ -25,6 +25,8 @@ public class Program
                 options.LogoutPath = "/Auth/Logout";
             });
 
+        builder.Services.AddHostedService<EconomyService>();
+
         var app = builder.Build();
 
         // Apply migrations and seed data

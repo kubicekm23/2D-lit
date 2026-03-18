@@ -16,6 +16,7 @@ import { initMap, openMap, closeMap, isMapOpen } from './ui/mapUI.js';
 import { initStrandedUI, openStranded, isStrandedOpen } from './ui/strandedUI.js';
 import { initDockingMinigame, openDockingMinigame, closeDockingMinigame, isDockingOpen } from './ui/dockingMinigame.js';
 import { initPauseMenu, openPauseMenu, closePauseMenu, isPauseOpen } from './ui/pauseMenu.js';
+import { initATC, showATC, hideATC } from './ui/atcUI.js';
 import { getNearestStation } from './renderer/hudRenderer.js';
 
 async function init() {
@@ -48,6 +49,7 @@ async function init() {
     initStrandedUI();
     initDockingMinigame(handleDockSuccess, handleShipDestroyed);
     initPauseMenu();
+    initATC();
 
     // Auto-save timer
     let saveTimer = 0;
@@ -68,16 +70,28 @@ async function init() {
             }
         }
 
-        // Handle docking - press F in ATC range to request permission
-        if (!playerState.isDocked && !isDockingOpen() && !isStrandedOpen() && wasPressed('KeyF')) {
+        // ATC Notification and Docking logic
+        if (!playerState.isDocked && !isDockingOpen() && !isStrandedOpen() && !isStationOpen()) {
             const nearest = getNearestStation();
+            let inRange = false;
             if (nearest) {
                 const dist = distance(playerState.ship.x, playerState.ship.y, nearest.x, nearest.y);
                 if (dist < ATC_RANGE) {
-                    setOverlayActive(true);
-                    openDockingMinigame(nearest.id, nearest.name, nearest.hangarLimit);
+                    inRange = true;
+                    showATC();
+                    
+                    if (wasPressed('KeyF')) {
+                        hideATC();
+                        setOverlayActive(true);
+                        openDockingMinigame(nearest.id, nearest.name, nearest.hangarLimit);
+                    }
                 }
             }
+            if (!inRange) {
+                hideATC();
+            }
+        } else {
+            hideATC();
         }
 
         // Escape - close overlays, abort docking, or open pause menu
