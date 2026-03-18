@@ -1,6 +1,6 @@
 import * as api from '../api/client.js';
 import { worldState } from '../world/worldState.js';
-import { playerState } from '../world/playerState.js';
+import { playerState, getMaxRange } from '../world/playerState.js';
 
 let overlay, canvas, ctx, detailsPanel;
 let isOpen = false;
@@ -91,6 +91,26 @@ function drawMap() {
     ctx.lineWidth = 1;
     ctx.strokeRect(bx0, by0, bx1 - bx0, by1 - by0);
 
+    // Max Range Circle
+    const range = getMaxRange();
+    if (range > 0) {
+        const [rx, ry] = worldToMap(playerState.lastDockedLocation.x, playerState.lastDockedLocation.y);
+        const worldW = worldState.maxX - worldState.minX;
+        const worldH = worldState.maxY - worldState.minY;
+        const baseScale = Math.min(w / worldW, h / worldH) * 0.85;
+        const screenRange = range * baseScale * zoom;
+
+        ctx.beginPath();
+        ctx.arc(rx, ry, screenRange, 0, Math.PI * 2);
+        ctx.strokeStyle = 'rgba(200, 0, 0, 0.6)';
+        ctx.setLineDash([5, 5]);
+        ctx.stroke();
+        ctx.setLineDash([]);
+
+        // Curved text "MAXIMUM RANGE"
+        drawCurvedText("MAXIMUM RANGE", rx, ry, screenRange + 5, -Math.PI / 2);
+    }
+
     // Draw all stations
     const visitedIds = new Set(mapData.map(v => v.stationId));
 
@@ -127,6 +147,31 @@ function drawMap() {
     ctx.fillText('M - Close Map | Scroll to zoom | Drag to pan | Click station for info', 10, h - 10);
 }
 
+function drawCurvedText(str, x, y, radius, startAngle) {
+    ctx.save();
+    ctx.font = '10px "JetBrains Mono", monospace';
+    ctx.fillStyle = 'rgba(200, 0, 0, 0.8)';
+    ctx.textAlign = 'center';
+    
+    // Spread letters slightly
+    const totalAngle = str.length * 0.08;
+    let currentAngle = startAngle - totalAngle / 2;
+
+    for (let i = 0; i < str.length; i++) {
+        const char = str[i];
+        ctx.save();
+        ctx.translate(
+            x + Math.cos(currentAngle) * radius,
+            y + Math.sin(currentAngle) * radius
+        );
+        ctx.rotate(currentAngle + Math.PI / 2);
+        ctx.fillText(char, 0, 0);
+        ctx.restore();
+        currentAngle += 0.08;
+    }
+    ctx.restore();
+}
+
 function onClick(e) {
     if (dragging && (Math.abs(e.clientX - lastMouse.x) > 5 || Math.abs(e.clientY - lastMouse.y) > 5)) {
         return; // Don't click when dragging
@@ -136,16 +181,16 @@ function onClick(e) {
     const mx = e.clientX - rect.left;
     const my = e.clientY - rect.top;
 
-    const visitedIds = new Set(mapData.map(v => v.stationId));
+    // Hit detection for all stations (not just visited, but details only for visited)
     let found = null;
+    let minDist = 20;
 
     for (const st of worldState.stations) {
-        if (!visitedIds.has(st.id)) continue;
         const [sx, sy] = worldToMap(st.x, st.y);
         const dist = Math.sqrt((mx - sx) ** 2 + (my - sy) ** 2);
-        if (dist < 15) {
+        if (dist < minDist) {
             found = st;
-            break;
+            minDist = dist;
         }
     }
 
@@ -158,37 +203,59 @@ function onClick(e) {
 
 function showStationDetails(st) {
     const data = playerState.visitedStations.get(st.id);
-    if (!data || !detailsPanel) return;
+    if (!detailsPanel) return;
 
-    const dateStr = new Date(data.visitedAt).toLocaleString();
+    const isTarget = playerState.targetStationId === st.id;
 
-    detailsPanel.innerHTML = `
+    let html = `
         <h3>${st.name}</h3>
-        <p>Last visited: ${dateStr}</p>
-        
-        <div class="map-details-section">
-            <h4>Market Data (Cached)</h4>
-            ${data.cachedGoods.length === 0 ? '<p>No data</p>' : `
-                <ul>
-                    ${data.cachedGoods.map(g => `
-                        <li><span>${g.name}</span> <span>${g.price} CR</span></li>
-                    `).join('')}
-                </ul>
-            `}
-        </div>
-
-        <div class="map-details-section">
-            <h4>Shipyard Data (Cached)</h4>
-            ${data.cachedShips.length === 0 ? '<p>No data</p>' : `
-                <ul>
-                    ${data.cachedShips.map(s => `
-                        <li><span>${s.name}</span> <span>${s.price.toLocaleString()} CR</span></li>
-                    `).join('')}
-                </ul>
-            `}
-        </div>
+        <p>Location: ${Math.round(st.x)}Ls, ${Math.round(st.y)}Ls</p>
+        <button id="btn-map-target" class="tab-btn ${isTarget ? 'active' : ''}" style="width:100%; margin-bottom:10px;">
+            ${isTarget ? 'DESTINATION SET' : 'SET DESTINATION'}
+        </button>
     `;
+
+    if (data) {
+        const dateStr = new Date(data.visitedAt).toLocaleString();
+        html += `
+            <p>Last visited: ${dateStr}</p>
+            <div class="map-details-section">
+                <h4>Market Data (Cached)</h4>
+                ${data.cachedGoods.length === 0 ? '<p>No data</p>' : `
+                    <ul>
+                        ${data.cachedGoods.map(g => `
+                            <li><span>${g.name}</span> <span>${g.price} CR</span></li>
+                        `).join('')}
+                    </ul>
+                `}
+            </div>
+            <div class="map-details-section">
+                <h4>Shipyard Data (Cached)</h4>
+                ${data.cachedShips.length === 0 ? '<p>No data</p>' : `
+                    <ul>
+                        ${data.cachedShips.map(s => `
+                            <li><span>${s.name}</span> <span>${s.price.toLocaleString()} CR</span></li>
+                        `).join('')}
+                    </ul>
+                `}
+            </div>
+        `;
+    } else {
+        html += `<p style="font-style:italic;">No data available. Visit station to update logs.</p>`;
+    }
+
+    detailsPanel.innerHTML = html;
     detailsPanel.style.display = 'block';
+
+    const targetBtn = document.getElementById('btn-map-target');
+    targetBtn.addEventListener('click', () => {
+        if (playerState.targetStationId === st.id) {
+            playerState.targetStationId = null;
+        } else {
+            playerState.targetStationId = st.id;
+        }
+        showStationDetails(st);
+    });
 }
 
 function onWheel(e) {

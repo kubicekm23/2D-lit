@@ -2,6 +2,8 @@ export const playerState = {
     credits: 0,
     isDocked: false,
     dockedStationId: null,
+    targetStationId: null,
+    lastDockedLocation: { x: 0, y: 0 },
 
     // Active ship
     ship: {
@@ -52,6 +54,13 @@ export function loadPlayer(data) {
         playerState.ship.hull = s.hull ?? 100;
         playerState.ship.cargo = s.cargo || [];
 
+        // Update range base if docked
+        if (data.isDocked && data.activeShip) {
+            playerState.lastDockedLocation = { x: data.activeShip.x, y: data.activeShip.y };
+        } else if (playerState.lastDockedLocation.x === 0 && playerState.lastDockedLocation.y === 0) {
+            playerState.lastDockedLocation = { x: s.x, y: s.y };
+        }
+
         if (s.type) {
             playerState.ship.type = {
                 id: s.type.id,
@@ -76,4 +85,11 @@ export function getSpeed() {
 export function getSpeedFraction() {
     const maxSpeed = playerState.ship.type.maxSpeed;
     return maxSpeed > 0 ? getSpeed() / maxSpeed : 0;
+}
+
+export function getMaxRange() {
+    const ship = playerState.ship;
+    if (!ship.type || ship.type.fuelEfficiency <= 0) return 0;
+    // Estimate: fuel / efficiency * (maxSpeed * 0.8 travel factor)
+    return (ship.fuel / ship.type.fuelEfficiency) * (ship.type.maxSpeed * 0.8);
 }
