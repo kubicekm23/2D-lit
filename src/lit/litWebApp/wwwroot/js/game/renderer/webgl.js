@@ -23,8 +23,8 @@ export function getGL() {
 
 export function resizeCanvas(canvas) {
     const dpr = window.devicePixelRatio || 1;
-    const w = canvas.clientWidth * dpr;
-    const h = canvas.clientHeight * dpr;
+    const w = Math.round(canvas.clientWidth * dpr);
+    const h = Math.round(canvas.clientHeight * dpr);
     if (canvas.width !== w || canvas.height !== h) {
         canvas.width = w;
         canvas.height = h;

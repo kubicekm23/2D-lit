@@ -160,12 +160,17 @@ public class GameApiController : ControllerBase
 
         if (station == null) return NotFound();
 
-        // Check range
-        var dist = MathF.Sqrt(
-            MathF.Pow(ship.PositionX - station.CoordinateX, 2) +
-            MathF.Pow(ship.PositionY - station.CoordinateY, 2));
-        if (dist > StationInteractionRange)
-            return BadRequest("Station out of range.");
+        // Check range (skip if already docked at this station)
+        var isDocked = await _db.HangarSpots
+            .AnyAsync(h => h.ShipId == ship.Id && h.StationId == id);
+        if (!isDocked)
+        {
+            var dist = MathF.Sqrt(
+                MathF.Pow(ship.PositionX - station.CoordinateX, 2) +
+                MathF.Pow(ship.PositionY - station.CoordinateY, 2));
+            if (dist > StationInteractionRange)
+                return BadRequest("Station out of range.");
+        }
 
         // Record visit and snapshot current data
         var visit = await _db.VisitedStations
