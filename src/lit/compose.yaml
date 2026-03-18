@@ -21,12 +21,16 @@ services:
       context: ./litWebApp
       dockerfile: Dockerfile
     ports:
-      - "8090:8090"
+      - "8090:8080"
     depends_on:
       db:
         condition: service_healthy
     environment:
       ConnectionStrings__DefaultConnection: "Host=db;Port=5432;Database=litgame;Username=lit;Password=litpass"
+      ASPNETCORE_FORWARDEDHEADERS_ENABLED: "true"
+    volumes:
+      - dataprotection:/home/app/.aspnet/DataProtection-Keys
 
 volumes:
   pgdata:
+  dataprotection:
