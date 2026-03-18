@@ -14,6 +14,7 @@ export function initBackground() {
     loc.cameraPos = gl.getUniformLocation(program, 'u_cameraPos');
     loc.resolution = gl.getUniformLocation(program, 'u_resolution');
     loc.zoom = gl.getUniformLocation(program, 'u_zoom');
+    loc.dpr = gl.getUniformLocation(program, 'u_dpr');
     loc.speedFraction = gl.getUniformLocation(program, 'u_speedFraction');
     loc.velocityDir = gl.getUniformLocation(program, 'u_velocityDir');
     loc.blurStart = gl.getUniformLocation(program, 'u_blurStart');
@@ -71,6 +72,7 @@ export function renderBackground(camera, playerState, speedFraction) {
     gl.uniform2f(loc.cameraPos, camera.x, camera.y);
     gl.uniform2f(loc.resolution, camera.width, camera.height);
     gl.uniform1f(loc.zoom, camera.zoom);
+    gl.uniform1f(loc.dpr, window.devicePixelRatio || 1);
     gl.uniform1f(loc.speedFraction, speedFraction);
     gl.uniform1f(loc.blurStart, BLUR_START);
     gl.uniform1f(loc.blurFull, BLUR_FULL);

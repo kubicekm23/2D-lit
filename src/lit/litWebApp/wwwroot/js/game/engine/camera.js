@@ -11,8 +11,8 @@ export const camera = {
 export function updateCamera(playerState, canvas) {
     camera.x = playerState.ship.x;
     camera.y = playerState.ship.y;
-    camera.width = canvas.width;
-    camera.height = canvas.height;
+    camera.width = canvas.clientWidth;
+    camera.height = canvas.clientHeight;
 
     // Zoom out when going fast, zoom in when slow
     const sf = getSpeedFraction();
