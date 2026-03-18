@@ -1,31 +1,31 @@
 @{
-    ViewData["Title"] = "Register";
+    ViewData["Title"] = "Registrace";
 }
 
 <div class="row justify-content-center">
     <div class="col-md-4">
-        <h2>Register</h2>
+        <h2>Registrace</h2>
         @if (ViewBag.Error != null)
         {
             <div class="alert alert-danger">@ViewBag.Error</div>
         }
         <form method="post" asp-action="Register">
             <div class="mb-3">
-                <label for="username" class="form-label">Username</label>
+                <label for="username" class="form-label">Uživatelské jméno</label>
                 <input type="text" class="form-control" id="username" name="username" required />
             </div>
             <div class="mb-3">
-                <label for="password" class="form-label">Password</label>
+                <label for="password" class="form-label">Heslo</label>
                 <input type="password" class="form-control" id="password" name="password" required />
             </div>
             <div class="mb-3">
-                <label for="confirmPassword" class="form-label">Confirm Password</label>
+                <label for="confirmPassword" class="form-label">Potvrzení hesla</label>
                 <input type="password" class="form-control" id="confirmPassword" name="confirmPassword" required />
             </div>
-            <button type="submit" class="btn btn-dark w-100">Register</button>
+            <button type="submit" class="btn btn-dark w-100">Zaregistrovat se</button>
         </form>
         <p class="mt-3 text-center">
-            Already have an account? <a asp-action="Login">Login</a>
+            Už máš účet? <a asp-action="Login">Přihlášení</a>
         </p>
     </div>
 </div>
