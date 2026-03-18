@@ -26,18 +26,24 @@ async function init() {
         return;
     }
 
-    // Load game data from server
+    // 1. Init WebGL context first (critical for all other renderers)
+    initWebGL(canvas);
+
+    // 2. Load game data from server
     const [worldData, playerData] = await Promise.all([
         api.getWorld(),
         api.getPlayer(),
     ]);
 
+    if (!worldData || !playerData) {
+        throw new Error('Failed to load world or player data');
+    }
+
     loadWorld(worldData);
     loadPlayer(playerData);
     setWorldBounds(worldData.minX, worldData.maxX, worldData.minY, worldData.maxY);
 
-    // Init WebGL
-    initWebGL(canvas);
+    // 3. Init Renderers and UI
     initBackground();
     initShip();
     initStations();
