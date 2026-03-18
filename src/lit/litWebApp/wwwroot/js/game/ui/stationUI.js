@@ -166,6 +166,8 @@ function renderServicesTab() {
     const ship = playerState.ship;
     const fuelNeeded = ship.type.maxFuel - ship.fuel;
     const fuelCost = Math.ceil(fuelNeeded * 5);
+    const hullDamage = 100 - Math.round(ship.hull);
+    const repairCost = Math.ceil(hullDamage * 2);
 
     return `
         <div class="services-section">
@@ -174,6 +176,14 @@ function renderServicesTab() {
             <p>Cost: ${fuelCost} CR</p>
             <button id="btn-refuel" ${fuelNeeded <= 0 ? 'disabled' : ''}>
                 ${fuelNeeded <= 0 ? 'Tank Full' : 'Refuel'}
+            </button>
+        </div>
+        <div class="services-section">
+            <h4>Repair Hull</h4>
+            <p>Hull: ${Math.round(ship.hull)}% ${ship.hull < 50 ? '- CRITICAL' : ship.hull < 80 ? '- Damaged' : ''}</p>
+            <p>Cost: ${repairCost} CR</p>
+            <button id="btn-repair" ${hullDamage <= 0 ? 'disabled' : ''}>
+                ${hullDamage <= 0 ? 'Hull Intact' : 'Repair'}
             </button>
         </div>
     `;
@@ -232,6 +242,20 @@ function bindTabEvents(tab) {
                     const result = await api.refuel(currentStationId);
                     playerState.credits = result.credits;
                     playerState.ship.fuel = result.fuel;
+                    renderStationUI();
+                } catch (e) {
+                    alert(e.message);
+                }
+            });
+        }
+
+        const repairBtn = document.getElementById('btn-repair');
+        if (repairBtn) {
+            repairBtn.addEventListener('click', async () => {
+                try {
+                    const result = await api.repair(currentStationId);
+                    playerState.credits = result.credits;
+                    playerState.ship.hull = result.hull;
                     renderStationUI();
                 } catch (e) {
                     alert(e.message);

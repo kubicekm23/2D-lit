@@ -43,7 +43,7 @@ async function init() {
     initStationUI();
     initMap();
     initStrandedUI();
-    initDockingMinigame(handleDockSuccess);
+    initDockingMinigame(handleDockSuccess, handleShipDestroyed);
 
     // Auto-save timer
     let saveTimer = 0;
@@ -106,6 +106,13 @@ async function init() {
     });
 }
 
+function handleShipDestroyed() {
+    // Ship was destroyed during docking - save hull=0, then open stranded UI
+    playerState.ship.hull = 0;
+    autoSave();
+    openStranded();
+}
+
 async function handleDockSuccess(stationId) {
     try {
         await api.dock(stationId);
@@ -128,6 +135,7 @@ async function autoSave() {
             vx: ship.vx,
             vy: ship.vy,
             fuel: ship.fuel,
+            hull: ship.hull,
         });
     } catch (e) {
         console.error('Auto-save failed:', e);
@@ -140,7 +148,7 @@ window.addEventListener('beforeunload', () => {
         const ship = playerState.ship;
         navigator.sendBeacon('/api/game/save', JSON.stringify({
             x: ship.x, y: ship.y, rotation: ship.rotation,
-            vx: ship.vx, vy: ship.vy, fuel: ship.fuel,
+            vx: ship.vx, vy: ship.vy, fuel: ship.fuel, hull: ship.hull,
         }));
     }
 });

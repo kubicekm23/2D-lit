@@ -94,6 +94,7 @@ public class GameApiController : ControllerBase
                 Rotation = activeShip.Rotation,
                 Vx = activeShip.VelocityX,
                 Vy = activeShip.VelocityY,
+                Hull = activeShip.Hull,
                 Type = MapShipType(activeShip.ShipType),
                 Cargo = activeShip.Cargos.Select(c => new CargoItemDto
                 {
@@ -120,6 +121,7 @@ public class GameApiController : ControllerBase
         ship.VelocityX = dto.Vx;
         ship.VelocityY = dto.Vy;
         ship.MnozstviPaliva = dto.Fuel;
+        ship.Hull = dto.Hull;
 
         await _db.SaveChangesAsync();
         return Ok();
@@ -410,6 +412,37 @@ public class GameApiController : ControllerBase
         _db.HangarSpots.Remove(ship.HangarSpot);
         await _db.SaveChangesAsync();
         return Ok();
+    }
+
+    private const decimal RepairPricePerPoint = 2m;
+
+    [HttpPost("station/{id}/repair")]
+    public async Task<IActionResult> Repair(int id)
+    {
+        var user = await _db.Users.FindAsync(UserId);
+        if (user == null) return NotFound();
+
+        var ship = await _db.Ships
+            .Include(s => s.ShipType)
+            .Include(s => s.HangarSpot)
+            .FirstOrDefaultAsync(s => s.UserId == UserId && s.IsActive);
+        if (ship == null) return NotFound();
+
+        if (ship.HangarSpot?.StationId != id)
+            return BadRequest("Not docked at this station.");
+
+        var damagePoints = 100f - ship.Hull;
+        if (damagePoints <= 0) return Ok(new { credits = user.Credits, hull = ship.Hull });
+
+        var cost = (decimal)damagePoints * RepairPricePerPoint;
+        if (user.Credits < cost)
+            return BadRequest("Insufficient credits.");
+
+        user.Credits -= cost;
+        ship.Hull = 100f;
+
+        await _db.SaveChangesAsync();
+        return Ok(new { credits = user.Credits, hull = ship.Hull });
     }
 
     [HttpPost("respawn")]

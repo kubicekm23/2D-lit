@@ -38,6 +38,7 @@ public class ShipDto
     public float Rotation { get; set; }
     public float Vx { get; set; }
     public float Vy { get; set; }
+    public float Hull { get; set; }
     public List<CargoItemDto> Cargo { get; set; } = new();
 }
 
@@ -95,6 +96,7 @@ public class SavePositionDto
     public float Vx { get; set; }
     public float Vy { get; set; }
     public float Fuel { get; set; }
+    public float Hull { get; set; }
 }
 
 public class TradeDto

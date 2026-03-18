@@ -1,4 +1,5 @@
 import { input } from '../engine/input.js';
+import { playerState } from '../world/playerState.js';
 
 let overlay = null;
 let canvas = null;
@@ -6,20 +7,20 @@ let ctx = null;
 let active = false;
 let animFrame = null;
 let onDockSuccess = null;
+let onShipDestroyed = null;
 let stationId = null;
 let stationName = '';
-let hangarLimit = 6;
+let totalBays = 8;
 let assignedBay = 0;
 
-// Minigame coordinate system (pixels, origin top-left of canvas)
 // Station cross-section dimensions
-const STATION_W = 700;
-const STATION_H = 350;
-const WALL_THICK = 40;
+const STATION_W = 750;
+const STATION_H = 400;
+const WALL_THICK = 45;
 const ENTRANCE_H = 80;
-const BAY_W = 70;
-const BAY_H = 50;
-const BAY_MARGIN = 10;
+const BAY_W = 60;
+const BAY_H = 45;
+const BAY_MARGIN = 8;
 
 // Player ship in minigame
 let ship = {
@@ -32,25 +33,37 @@ let ship = {
     size: 10,
 };
 
+// Crash/damage state
+let crashCount = 0;
+let crashFlashTimer = 0;
+let hullDisplay = 100;
+const CRASH_SPEED_THRESHOLD = 25; // speed above this = a crash
+const CRASH_DAMAGE = 35; // hull damage per crash
+
 // AI ships
 let aiShips = [];
-const AI_SPEED = 30;
-const AI_COUNT = 3;
+const AI_SPEED = 35;
+const AI_COUNT = 4;
 
 // Station position (centered on canvas)
 let stX = 0, stY = 0;
 
-// Phase: 'requesting' | 'granted' | 'flying' | 'docked'
+// Bay layout: floor bays + ceiling bays
+let floorBayCount = 0;
+let ceilBayCount = 0;
+
+// Phase: 'requesting' | 'granted' | 'flying' | 'docked' | 'destroyed'
 let phase = 'requesting';
 let phaseTimer = 0;
 let dockTimer = 0;
-const DOCK_HOLD_TIME = 1.5; // seconds player must hold still in bay
+const DOCK_HOLD_TIME = 1.5;
 
-export function initDockingMinigame(onSuccess) {
+export function initDockingMinigame(onSuccess, onDestroy) {
     overlay = document.getElementById('docking-overlay');
     canvas = document.getElementById('docking-canvas');
     if (canvas) ctx = canvas.getContext('2d');
     onDockSuccess = onSuccess;
+    onShipDestroyed = onDestroy;
 }
 
 export function isDockingOpen() {
@@ -61,22 +74,30 @@ export function openDockingMinigame(sid, sname, hangarLim) {
     if (!overlay || !canvas || !ctx) return;
     stationId = sid;
     stationName = sname || 'Station';
-    hangarLimit = Math.max(3, Math.min(hangarLim || 6, 10));
-    assignedBay = Math.floor(Math.random() * hangarLimit);
 
-    // Reset ship position (to the left of station entrance)
+    // More bays - split between floor and ceiling (centrifuge station)
+    totalBays = Math.max(6, Math.min(hangarLim || 8, 16));
+    floorBayCount = Math.ceil(totalBays / 2);
+    ceilBayCount = totalBays - floorBayCount;
+    assignedBay = Math.floor(Math.random() * totalBays);
+
+    // Reset ship
     resizeCanvas();
-    stX = canvas.width / 2 - STATION_W / 2;
-    stY = canvas.height / 2 - STATION_H / 2;
+    stX = canvas.clientWidth / 2 - STATION_W / 2;
+    stY = canvas.clientHeight / 2 - STATION_H / 2;
 
     const entranceY = stY + STATION_H / 2 - ENTRANCE_H / 2;
     ship.x = stX - 80;
     ship.y = entranceY + ENTRANCE_H / 2;
     ship.vx = 0;
     ship.vy = 0;
-    ship.rotation = 0; // pointing right
+    ship.rotation = 0;
 
-    // Spawn AI ships
+    // Reset damage state
+    crashCount = 0;
+    crashFlashTimer = 0;
+    hullDisplay = playerState.ship.hull;
+
     spawnAIShips();
 
     phase = 'requesting';
@@ -117,7 +138,6 @@ function loop(timestamp) {
     const cw = canvas.clientWidth;
     const ch = canvas.clientHeight;
 
-    // Update station position (centered)
     stX = cw / 2 - STATION_W / 2;
     stY = ch / 2 - STATION_H / 2;
 
@@ -128,8 +148,8 @@ function loop(timestamp) {
 }
 
 function update(dt, cw, ch) {
-    // Phase management
     phaseTimer += dt;
+    if (crashFlashTimer > 0) crashFlashTimer -= dt;
 
     if (phase === 'requesting') {
         if (phaseTimer > 2.0) {
@@ -147,7 +167,7 @@ function update(dt, cw, ch) {
         return;
     }
 
-    if (phase === 'docked') return;
+    if (phase === 'docked' || phase === 'destroyed') return;
 
     // Flying phase - player controls
     if (input.left) ship.rotation -= ship.turnRate * dt;
@@ -178,8 +198,16 @@ function update(dt, cw, ch) {
     ship.x += ship.vx * dt;
     ship.y += ship.vy * dt;
 
-    // Wall collision
-    resolveWallCollision();
+    // Wall collision with crash detection
+    const preSpeed = Math.sqrt(ship.vx * ship.vx + ship.vy * ship.vy);
+    const collided = resolveWallCollision();
+    if (collided && preSpeed > CRASH_SPEED_THRESHOLD) {
+        handleCrash();
+        if (phase === 'destroyed') return;
+    }
+
+    // AI collision
+    checkAICollision();
 
     // Keep ship on screen
     ship.x = Math.max(10, Math.min(cw - 10, ship.x));
@@ -195,6 +223,8 @@ function update(dt, cw, ch) {
         if (dockTimer >= DOCK_HOLD_TIME) {
             phase = 'docked';
             phaseTimer = 0;
+            // Apply hull to player state
+            playerState.ship.hull = hullDisplay;
             setTimeout(() => {
                 closeDockingMinigame();
                 if (onDockSuccess) onDockSuccess(stationId);
@@ -204,22 +234,84 @@ function update(dt, cw, ch) {
         dockTimer = Math.max(0, dockTimer - dt * 2);
     }
 
-    // Update AI ships
     updateAI(dt, cw, ch);
 }
 
+function handleCrash() {
+    crashCount++;
+    crashFlashTimer = 0.5;
+    hullDisplay = Math.max(0, hullDisplay - CRASH_DAMAGE);
+
+    if (hullDisplay <= 0) {
+        // Ship destroyed
+        phase = 'destroyed';
+        phaseTimer = 0;
+        playerState.ship.hull = 0;
+        setTimeout(() => {
+            closeDockingMinigame();
+            if (onShipDestroyed) onShipDestroyed();
+        }, 2500);
+    }
+}
+
+function checkAICollision() {
+    const collisionDist = ship.size + 8; // ship.size + ai.size
+    for (const ai of aiShips) {
+        if (ai.state === 'outside') continue;
+        const dx = ship.x - ai.x;
+        const dy = ship.y - ai.y;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+        if (dist < collisionDist) {
+            // Push apart
+            const nx = dx / dist;
+            const ny = dy / dist;
+            ship.x = ai.x + nx * collisionDist;
+            ship.y = ai.y + ny * collisionDist;
+
+            const relSpeed = Math.sqrt(ship.vx * ship.vx + ship.vy * ship.vy);
+            ship.vx = nx * relSpeed * 0.5;
+            ship.vy = ny * relSpeed * 0.5;
+
+            if (relSpeed > CRASH_SPEED_THRESHOLD) {
+                handleCrash();
+            }
+        }
+    }
+}
+
+// Returns bay index 0..floorBayCount-1 for floor, floorBayCount..totalBays-1 for ceiling
 function getBayRect(bayIndex) {
     const innerLeft = stX + WALL_THICK;
-    const innerBottom = stY + STATION_H - WALL_THICK;
-    const totalBaysWidth = hangarLimit * (BAY_W + BAY_MARGIN) - BAY_MARGIN;
-    const startX = innerLeft + (STATION_W - 2 * WALL_THICK - totalBaysWidth) / 2;
+    const innerW = STATION_W - 2 * WALL_THICK;
 
-    return {
-        x: startX + bayIndex * (BAY_W + BAY_MARGIN),
-        y: innerBottom - BAY_H,
-        w: BAY_W,
-        h: BAY_H,
-    };
+    if (bayIndex < floorBayCount) {
+        // Floor bays (bottom wall, bays open upward)
+        const count = floorBayCount;
+        const totalW = count * (BAY_W + BAY_MARGIN) - BAY_MARGIN;
+        const startX = innerLeft + (innerW - totalW) / 2;
+        const y = stY + STATION_H - WALL_THICK - BAY_H;
+        return {
+            x: startX + bayIndex * (BAY_W + BAY_MARGIN),
+            y: y,
+            w: BAY_W,
+            h: BAY_H,
+            side: 'floor',
+        };
+    } else {
+        // Ceiling bays (top wall, bays open downward)
+        const ci = bayIndex - floorBayCount;
+        const count = ceilBayCount;
+        const totalW = count * (BAY_W + BAY_MARGIN) - BAY_MARGIN;
+        const startX = innerLeft + (innerW - totalW) / 2;
+        const y = stY + WALL_THICK;
+        return {
+            x: startX + ci * (BAY_W + BAY_MARGIN),
+            y: y,
+            w: BAY_W,
+            h: BAY_H,
+            side: 'ceiling',
+        };
+    }
 }
 
 function resolveWallCollision() {
@@ -230,71 +322,83 @@ function resolveWallCollision() {
     const innerBottom = stY + STATION_H - WALL_THICK;
     const entranceTop = stY + STATION_H / 2 - ENTRANCE_H / 2;
     const entranceBottom = stY + STATION_H / 2 + ENTRANCE_H / 2;
+    let hit = false;
 
-    // Check if ship is inside station walls
     const insideOuter = ship.x > stX && ship.x < stX + STATION_W &&
                         ship.y > stY && ship.y < stY + STATION_H;
 
-    if (!insideOuter) return;
+    if (!insideOuter) return false;
 
     const insideInner = ship.x > innerLeft + s && ship.x < innerRight - s &&
                         ship.y > innerTop + s && ship.y < innerBottom - s;
 
-    if (insideInner) return;
+    if (insideInner) return false;
 
-    // Ship is in the wall zone - check if in entrance gap
+    // Entrance gap check
     const inEntranceX = ship.x < innerLeft + s && ship.x > stX - s;
     const inEntranceY = ship.y > entranceTop + s && ship.y < entranceBottom - s;
 
-    if (inEntranceX && inEntranceY) return; // in the entrance, allow passage
+    if (inEntranceX && inEntranceY) return false;
 
-    // Colliding with wall - push out
+    // Wall collisions
     if (ship.x < innerLeft + s && ship.x > stX) {
-        // Left wall (but not in entrance)
         if (ship.y < entranceTop || ship.y > entranceBottom) {
             ship.x = innerLeft + s;
             ship.vx = Math.abs(ship.vx) * 0.3;
+            hit = true;
         } else {
-            // Near entrance edges
             if (ship.y < entranceTop + s) {
                 ship.y = entranceTop + s;
                 ship.vy = Math.abs(ship.vy) * 0.3;
+                hit = true;
             }
             if (ship.y > entranceBottom - s) {
                 ship.y = entranceBottom - s;
                 ship.vy = -Math.abs(ship.vy) * 0.3;
+                hit = true;
             }
         }
     }
     if (ship.x > innerRight - s && ship.x < stX + STATION_W) {
         ship.x = innerRight - s;
         ship.vx = -Math.abs(ship.vx) * 0.3;
+        hit = true;
     }
     if (ship.y < innerTop + s && ship.y > stY) {
         ship.y = innerTop + s;
         ship.vy = Math.abs(ship.vy) * 0.3;
+        hit = true;
     }
     if (ship.y > innerBottom - s && ship.y < stY + STATION_H) {
         ship.y = innerBottom - s;
         ship.vy = -Math.abs(ship.vy) * 0.3;
+        hit = true;
     }
+
+    return hit;
 }
 
 function spawnAIShips() {
     aiShips = [];
+    const usedBays = new Set([assignedBay]);
     for (let i = 0; i < AI_COUNT; i++) {
-        const bay = Math.floor(Math.random() * hangarLimit);
-        if (bay === assignedBay) continue; // don't block assigned bay
+        let bay;
+        let attempts = 0;
+        do {
+            bay = Math.floor(Math.random() * totalBays);
+            attempts++;
+        } while (usedBays.has(bay) && attempts < 20);
+        if (usedBays.has(bay)) continue;
+        usedBays.add(bay);
+
         const bayRect = getBayRect(bay);
         aiShips.push({
             x: bayRect.x + bayRect.w / 2,
             y: bayRect.y + bayRect.h / 2,
-            rotation: -Math.PI / 2, // pointing up
-            state: 'parked', // 'parked', 'leaving', 'entering', 'outside'
+            rotation: bayRect.side === 'floor' ? -Math.PI / 2 : Math.PI / 2,
+            state: 'parked',
             timer: 3 + Math.random() * 8,
             bay: bay,
-            targetX: 0,
-            targetY: 0,
             size: 8,
         });
     }
@@ -303,6 +407,7 @@ function spawnAIShips() {
 function updateAI(dt, cw, ch) {
     const entranceMidY = stY + STATION_H / 2;
     const outsideX = stX - 120;
+    const innerMidY = stY + STATION_H / 2;
 
     for (const ai of aiShips) {
         ai.timer -= dt;
@@ -313,18 +418,13 @@ function updateAI(dt, cw, ch) {
         }
 
         if (ai.state === 'leaving') {
-            // Move toward entrance then outside
-            const targetX = outsideX;
-            const targetY = entranceMidY;
-
-            // First move up to entrance height
-            if (Math.abs(ai.y - targetY) > 5) {
-                ai.y += (targetY > ai.y ? 1 : -1) * AI_SPEED * dt;
-                ai.rotation = targetY > ai.y ? Math.PI / 2 : -Math.PI / 2;
+            // First move to center height, then to entrance, then outside
+            if (Math.abs(ai.y - entranceMidY) > 5) {
+                ai.y += (entranceMidY > ai.y ? 1 : -1) * AI_SPEED * dt;
+                ai.rotation = entranceMidY > ai.y ? Math.PI / 2 : -Math.PI / 2;
             } else {
-                // Then move left through entrance
                 ai.x -= AI_SPEED * dt;
-                ai.rotation = Math.PI; // pointing left
+                ai.rotation = Math.PI;
                 if (ai.x < outsideX) {
                     ai.state = 'outside';
                     ai.timer = 4 + Math.random() * 6;
@@ -343,10 +443,9 @@ function updateAI(dt, cw, ch) {
             const targetX = bayRect.x + bayRect.w / 2;
             const targetY = bayRect.y + bayRect.h / 2;
 
-            // Move right through entrance first
             if (ai.x < stX + WALL_THICK + 20) {
                 ai.x += AI_SPEED * dt;
-                ai.rotation = 0; // pointing right
+                ai.rotation = 0;
             } else if (Math.abs(ai.x - targetX) > 5) {
                 ai.x += (targetX > ai.x ? 1 : -1) * AI_SPEED * dt;
                 ai.rotation = targetX > ai.x ? 0 : Math.PI;
@@ -356,7 +455,7 @@ function updateAI(dt, cw, ch) {
             } else {
                 ai.state = 'parked';
                 ai.timer = 5 + Math.random() * 10;
-                ai.rotation = -Math.PI / 2;
+                ai.rotation = bayRect.side === 'floor' ? -Math.PI / 2 : Math.PI / 2;
             }
         }
     }
@@ -369,7 +468,7 @@ function draw(cw, ch) {
     ctx.fillStyle = '#020210';
     ctx.fillRect(0, 0, cw, ch);
 
-    // Draw some background stars
+    // Background stars
     ctx.fillStyle = '#335';
     for (let i = 0; i < 60; i++) {
         const sx = ((i * 137.5) % cw);
@@ -377,12 +476,21 @@ function draw(cw, ch) {
         ctx.fillRect(sx, sy, 1.5, 1.5);
     }
 
+    // Crash flash
+    if (crashFlashTimer > 0) {
+        const alpha = crashFlashTimer * 0.6;
+        ctx.fillStyle = `rgba(255, 50, 0, ${alpha})`;
+        ctx.fillRect(0, 0, cw, ch);
+    }
+
     drawStation(cw, ch);
     drawBays();
 
-    if (phase === 'flying' || phase === 'docked') {
+    if (phase === 'flying' || phase === 'docked' || phase === 'destroyed') {
         drawAIShips();
-        drawPlayerShip();
+        if (phase !== 'destroyed') {
+            drawPlayerShip();
+        }
     }
 
     drawHUD(cw, ch);
@@ -393,7 +501,7 @@ function drawStation(cw, ch) {
     ctx.fillStyle = '#2a2a3a';
     ctx.fillRect(stX, stY, STATION_W, STATION_H);
 
-    // Inner space (darker)
+    // Inner space
     const innerLeft = stX + WALL_THICK;
     const innerTop = stY + WALL_THICK;
     const innerW = STATION_W - 2 * WALL_THICK;
@@ -401,7 +509,7 @@ function drawStation(cw, ch) {
     ctx.fillStyle = '#0a0a18';
     ctx.fillRect(innerLeft, innerTop, innerW, innerH);
 
-    // Entrance gap (cut out left wall)
+    // Entrance gap
     const entranceTop = stY + STATION_H / 2 - ENTRANCE_H / 2;
     ctx.fillStyle = '#0a0a18';
     ctx.fillRect(stX, entranceTop, WALL_THICK, ENTRANCE_H);
@@ -415,22 +523,18 @@ function drawStation(cw, ch) {
     // Wall edge highlights
     ctx.strokeStyle = '#445';
     ctx.lineWidth = 1;
-    // Top wall bottom edge
     ctx.beginPath();
     ctx.moveTo(innerLeft, innerTop);
     ctx.lineTo(innerLeft + innerW, innerTop);
     ctx.stroke();
-    // Bottom wall top edge
     ctx.beginPath();
     ctx.moveTo(innerLeft, innerTop + innerH);
     ctx.lineTo(innerLeft + innerW, innerTop + innerH);
     ctx.stroke();
-    // Right wall left edge
     ctx.beginPath();
     ctx.moveTo(innerLeft + innerW, innerTop);
     ctx.lineTo(innerLeft + innerW, innerTop + innerH);
     ctx.stroke();
-    // Left wall right edge (above and below entrance)
     ctx.beginPath();
     ctx.moveTo(innerLeft, innerTop);
     ctx.lineTo(innerLeft, entranceTop);
@@ -440,20 +544,33 @@ function drawStation(cw, ch) {
     ctx.lineTo(innerLeft, innerTop + innerH);
     ctx.stroke();
 
-    // Station name on top wall
+    // Centrifuge rotation arrows on walls to indicate spin
+    ctx.font = '10px monospace';
+    ctx.fillStyle = '#334';
+    ctx.textAlign = 'center';
+    // Top wall arrows (moving right)
+    for (let x = innerLeft + 40; x < innerLeft + innerW - 40; x += 80) {
+        ctx.fillText('\u25B6', x, stY + WALL_THICK / 2 + 3);
+    }
+    // Bottom wall arrows (moving left)
+    for (let x = innerLeft + 40; x < innerLeft + innerW - 40; x += 80) {
+        ctx.fillText('\u25C0', x, stY + STATION_H - WALL_THICK / 2 + 3);
+    }
+    ctx.textAlign = 'left';
+
+    // Station name
     ctx.font = '11px monospace';
     ctx.fillStyle = '#556';
     ctx.textAlign = 'center';
-    ctx.fillText(stationName, stX + STATION_W / 2, stY + WALL_THICK / 2 + 4);
+    ctx.fillText(stationName + ' (Centrifuge Station)', stX + STATION_W / 2, stY - 8);
     ctx.textAlign = 'left';
 }
 
 function drawBays() {
-    for (let i = 0; i < hangarLimit; i++) {
+    for (let i = 0; i < totalBays; i++) {
         const bay = getBayRect(i);
 
         if (i === assignedBay) {
-            // Assigned bay - highlighted
             const pulse = 0.3 + Math.sin(performance.now() / 400) * 0.15;
             ctx.fillStyle = `rgba(0, 255, 100, ${pulse})`;
             ctx.fillRect(bay.x, bay.y, bay.w, bay.h);
@@ -461,18 +578,16 @@ function drawBays() {
             ctx.lineWidth = 2;
             ctx.strokeRect(bay.x, bay.y, bay.w, bay.h);
 
-            // Bay number
-            ctx.font = 'bold 14px monospace';
+            ctx.font = 'bold 12px monospace';
             ctx.fillStyle = '#0f6';
             ctx.textAlign = 'center';
-            ctx.fillText(`BAY ${i + 1}`, bay.x + bay.w / 2, bay.y + bay.h / 2 + 5);
+            ctx.fillText(`BAY ${i + 1}`, bay.x + bay.w / 2, bay.y + bay.h / 2 + 4);
             ctx.textAlign = 'left';
         } else {
-            // Other bays
             ctx.strokeStyle = '#334';
             ctx.lineWidth = 1;
             ctx.strokeRect(bay.x, bay.y, bay.w, bay.h);
-            ctx.font = '10px monospace';
+            ctx.font = '9px monospace';
             ctx.fillStyle = '#334';
             ctx.textAlign = 'center';
             ctx.fillText(`${i + 1}`, bay.x + bay.w / 2, bay.y + bay.h / 2 + 3);
@@ -484,10 +599,11 @@ function drawBays() {
     if (dockTimer > 0 && phase === 'flying') {
         const pct = dockTimer / DOCK_HOLD_TIME;
         const bay = getBayRect(assignedBay);
+        const barY = bay.side === 'floor' ? bay.y + bay.h + 4 : bay.y - 8;
         ctx.fillStyle = '#0f6';
-        ctx.fillRect(bay.x, bay.y + bay.h + 4, bay.w * pct, 4);
+        ctx.fillRect(bay.x, barY, bay.w * pct, 4);
         ctx.strokeStyle = '#0f6';
-        ctx.strokeRect(bay.x, bay.y + bay.h + 4, bay.w, 4);
+        ctx.strokeRect(bay.x, barY, bay.w, 4);
     }
 }
 
@@ -496,26 +612,35 @@ function drawPlayerShip() {
     ctx.translate(ship.x, ship.y);
     ctx.rotate(ship.rotation);
 
-    // Triangle ship
+    // Rectangular ship with pointed front (matching main game)
+    const s = ship.size;
     ctx.beginPath();
-    ctx.moveTo(ship.size, 0);
-    ctx.lineTo(-ship.size * 0.7, -ship.size * 0.5);
-    ctx.lineTo(-ship.size * 0.4, 0);
-    ctx.lineTo(-ship.size * 0.7, ship.size * 0.5);
+    ctx.moveTo(-s * 0.6, -s * 0.35);
+    ctx.lineTo(s * 0.4, -s * 0.35);
+    ctx.lineTo(s * 0.4, -s * 0.25);
+    ctx.lineTo(s, 0);
+    ctx.lineTo(s * 0.4, s * 0.25);
+    ctx.lineTo(s * 0.4, s * 0.35);
+    ctx.lineTo(-s * 0.6, s * 0.35);
     ctx.closePath();
 
-    ctx.fillStyle = '#dde';
+    // Flash red on crash
+    if (crashFlashTimer > 0) {
+        ctx.fillStyle = '#f44';
+    } else {
+        ctx.fillStyle = '#dde';
+    }
     ctx.fill();
     ctx.strokeStyle = '#8af';
     ctx.lineWidth = 1;
     ctx.stroke();
 
-    // Engine glow when thrusting
+    // Engine glow
     if (input.up) {
         ctx.beginPath();
-        ctx.moveTo(-ship.size * 0.5, -ship.size * 0.25);
-        ctx.lineTo(-ship.size * (0.8 + Math.random() * 0.4), 0);
-        ctx.lineTo(-ship.size * 0.5, ship.size * 0.25);
+        ctx.moveTo(-s * 0.6, -s * 0.2);
+        ctx.lineTo(-s * (0.8 + Math.random() * 0.4), 0);
+        ctx.lineTo(-s * 0.6, s * 0.2);
         ctx.fillStyle = `rgba(100, 180, 255, ${0.5 + Math.random() * 0.3})`;
         ctx.fill();
     }
@@ -531,11 +656,15 @@ function drawAIShips() {
         ctx.translate(ai.x, ai.y);
         ctx.rotate(ai.rotation);
 
+        const s = ai.size;
         ctx.beginPath();
-        ctx.moveTo(ai.size, 0);
-        ctx.lineTo(-ai.size * 0.7, -ai.size * 0.5);
-        ctx.lineTo(-ai.size * 0.4, 0);
-        ctx.lineTo(-ai.size * 0.7, ai.size * 0.5);
+        ctx.moveTo(-s * 0.6, -s * 0.35);
+        ctx.lineTo(s * 0.4, -s * 0.35);
+        ctx.lineTo(s * 0.4, -s * 0.25);
+        ctx.lineTo(s, 0);
+        ctx.lineTo(s * 0.4, s * 0.25);
+        ctx.lineTo(s * 0.4, s * 0.35);
+        ctx.lineTo(-s * 0.6, s * 0.35);
         ctx.closePath();
 
         ctx.fillStyle = '#665';
@@ -549,7 +678,6 @@ function drawAIShips() {
 }
 
 function drawHUD(cw, ch) {
-    // Phase messages
     ctx.textAlign = 'center';
 
     if (phase === 'requesting') {
@@ -568,25 +696,65 @@ function drawHUD(cw, ch) {
         ctx.fillText('PERMISSION GRANTED', cw / 2, 40);
         ctx.font = '14px monospace';
         ctx.fillStyle = '#8c8';
-        ctx.fillText(`Assigned to Bay ${assignedBay + 1} - Navigate to your bay and hold position`, cw / 2, 65);
+        const side = assignedBay < floorBayCount ? 'FLOOR' : 'CEILING';
+        ctx.fillText(`Bay ${assignedBay + 1} (${side}) - Navigate and hold position`, cw / 2, 65);
     }
 
     if (phase === 'flying') {
         ctx.font = '13px monospace';
         ctx.fillStyle = '#8af';
-        ctx.fillText(`Navigate to Bay ${assignedBay + 1} | W/S - Thrust/Brake | A/D - Rotate`, cw / 2, 30);
+        const side = assignedBay < floorBayCount ? 'Floor' : 'Ceiling';
+        ctx.fillText(`Bay ${assignedBay + 1} (${side}) | W/S - Thrust/Brake | A/D - Rotate`, cw / 2, 30);
 
-        // Speed indicator
+        // Speed
         const spd = Math.sqrt(ship.vx * ship.vx + ship.vy * ship.vy);
         ctx.font = '12px monospace';
-        ctx.fillStyle = spd < 15 ? '#0f0' : '#fa0';
+        ctx.fillStyle = spd < 15 ? '#0f0' : (spd > CRASH_SPEED_THRESHOLD ? '#f44' : '#fa0');
         ctx.fillText(`SPD: ${Math.round(spd)}`, cw / 2, ch - 20);
     }
 
+    // Hull display (always visible during flying)
+    if (phase === 'flying' || phase === 'destroyed') {
+        ctx.textAlign = 'right';
+        ctx.font = '13px monospace';
+        const hullColor = hullDisplay > 60 ? '#0f0' : hullDisplay > 30 ? '#fa0' : '#f44';
+        ctx.fillStyle = hullColor;
+        ctx.fillText(`HULL: ${Math.round(hullDisplay)}%`, cw - 15, 30);
+
+        // Hull bar
+        const barW = 120;
+        const barH = 8;
+        const barX = cw - 15 - barW;
+        const barY = 36;
+        ctx.fillStyle = '#222';
+        ctx.fillRect(barX, barY, barW, barH);
+        ctx.fillStyle = hullColor;
+        ctx.fillRect(barX, barY, barW * hullDisplay / 100, barH);
+        ctx.strokeStyle = '#445';
+        ctx.strokeRect(barX, barY, barW, barH);
+
+        if (crashCount > 0) {
+            ctx.font = '11px monospace';
+            ctx.fillStyle = '#f88';
+            ctx.fillText(`Impacts: ${crashCount}`, cw - 15, barY + 22);
+        }
+    }
+
     if (phase === 'docked') {
+        ctx.textAlign = 'center';
         ctx.font = '22px monospace';
         ctx.fillStyle = '#0f0';
         ctx.fillText('DOCKED SUCCESSFULLY', cw / 2, 50);
+    }
+
+    if (phase === 'destroyed') {
+        ctx.textAlign = 'center';
+        ctx.font = '26px monospace';
+        ctx.fillStyle = '#f44';
+        ctx.fillText('SHIP DESTROYED', cw / 2, ch / 2 - 10);
+        ctx.font = '14px monospace';
+        ctx.fillStyle = '#a66';
+        ctx.fillText('Hull integrity lost from collision damage', cw / 2, ch / 2 + 20);
     }
 
     ctx.textAlign = 'left';

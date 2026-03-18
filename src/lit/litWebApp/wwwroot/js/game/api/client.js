@@ -55,6 +55,12 @@ export async function refuel(stationId) {
     });
 }
 
+export async function repair(stationId) {
+    return request(`/api/game/station/${stationId}/repair`, {
+        method: 'POST',
+    });
+}
+
 export async function buyShip(stationId, shipTypeId) {
     return request(`/api/game/station/${stationId}/buyship`, {
         method: 'POST',

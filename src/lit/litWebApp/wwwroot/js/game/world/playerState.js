@@ -13,6 +13,7 @@ export const playerState = {
         vx: 0,
         vy: 0,
         fuel: 0,
+        hull: 100,       // 0-100, ship destroyed at 0
         cargo: [],       // { cargoTypeId, name, quantity, weight }
         type: {
             id: 0,
@@ -48,6 +49,7 @@ export function loadPlayer(data) {
         playerState.ship.vx = s.vx;
         playerState.ship.vy = s.vy;
         playerState.ship.fuel = s.fuel;
+        playerState.ship.hull = s.hull ?? 100;
         playerState.ship.cargo = s.cargo || [];
 
         if (s.type) {

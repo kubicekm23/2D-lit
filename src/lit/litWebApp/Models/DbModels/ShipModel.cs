@@ -21,6 +21,7 @@ public class ShipModel
     public float Rotation { get; set; }
     public float VelocityX { get; set; }
     public float VelocityY { get; set; }
+    public float Hull { get; set; } = 100f; // 0-100, ship destroyed at 0
     public bool IsActive { get; set; }
 
     // Navigation

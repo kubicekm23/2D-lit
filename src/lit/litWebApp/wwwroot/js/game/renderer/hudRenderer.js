@@ -8,6 +8,7 @@ export function initHud() {
     elements = {
         speed: document.getElementById('hud-speed'),
         fuel: document.getElementById('hud-fuel'),
+        hull: document.getElementById('hud-hull'),
         credits: document.getElementById('hud-credits'),
         stationInfo: document.getElementById('hud-station'),
         coords: document.getElementById('hud-coords'),
@@ -27,6 +28,12 @@ export function updateHud(playerState, worldState) {
     if (elements.fuel) {
         elements.fuel.textContent = `FUEL: ${Math.round(fuelPct)}%`;
         elements.fuel.style.color = fuelPct < 20 ? '#c00' : '#000';
+    }
+
+    if (elements.hull) {
+        const hull = Math.round(ship.hull);
+        elements.hull.textContent = `HULL: ${hull}%`;
+        elements.hull.style.color = hull < 30 ? '#c00' : hull < 60 ? '#960' : '#000';
     }
 
     if (elements.credits) {
