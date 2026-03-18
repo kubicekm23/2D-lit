@@ -7,11 +7,13 @@ import { initHud } from './renderer/hudRenderer.js';
 import { startGameLoop } from './engine/gameLoop.js';
 import { worldState, loadWorld } from './world/worldState.js';
 import { playerState, loadPlayer, getSpeed } from './world/playerState.js';
-import { setWorldBounds, AUTOSAVE_INTERVAL, LANDING_RANGE, LANDING_MAX_SPEED } from './utils/constants.js';
+import { setWorldBounds, AUTOSAVE_INTERVAL, ATC_RANGE, LANDING_RANGE, LANDING_MAX_SPEED } from './utils/constants.js';
 import { distance } from './utils/math.js';
 import * as api from './api/client.js';
 import { initStationUI, openStation, closeStation, isOpen as isStationOpen } from './ui/stationUI.js';
 import { initMap, openMap, closeMap, isMapOpen } from './ui/mapUI.js';
+import { initStrandedUI, openStranded, isStrandedOpen } from './ui/strandedUI.js';
+import { initDockingMinigame, openDockingMinigame, closeDockingMinigame, isDockingOpen } from './ui/dockingMinigame.js';
 import { getNearestStation } from './renderer/hudRenderer.js';
 
 async function init() {
@@ -40,6 +42,8 @@ async function init() {
     initHud();
     initStationUI();
     initMap();
+    initStrandedUI();
+    initDockingMinigame(handleDockSuccess);
 
     // Auto-save timer
     let saveTimer = 0;
@@ -60,15 +64,24 @@ async function init() {
             }
         }
 
-        // Handle docking
-        if (!playerState.isDocked && wasPressed('KeyF')) {
+        // Handle docking - press F in ATC range to request permission
+        if (!playerState.isDocked && !isDockingOpen() && !isStrandedOpen() && wasPressed('KeyF')) {
             const nearest = getNearestStation();
             if (nearest) {
                 const dist = distance(playerState.ship.x, playerState.ship.y, nearest.x, nearest.y);
-                const speed = getSpeed();
-                if (dist < LANDING_RANGE && speed < LANDING_MAX_SPEED) {
-                    handleDock(nearest.id);
+                if (dist < ATC_RANGE) {
+                    // Open docking minigame with permission request flow
+                    openDockingMinigame(nearest.id, nearest.name, nearest.hangarLimit);
                 }
+            }
+        }
+
+        // Escape to close overlays / abort docking
+        if (wasPressed('Escape')) {
+            if (isDockingOpen()) {
+                closeDockingMinigame();
+            } else if (isMapOpen()) {
+                closeMap();
             }
         }
 
@@ -76,19 +89,24 @@ async function init() {
         if (wasPressed('KeyM')) {
             if (isMapOpen()) {
                 closeMap();
-            } else if (!isStationOpen()) {
+            } else if (!isStationOpen() && !isDockingOpen() && !isStrandedOpen()) {
                 openMap();
             }
         }
 
-        // Escape to close overlays
-        if (wasPressed('Escape')) {
-            if (isMapOpen()) closeMap();
+        // Stranded check - fuel empty while flying
+        if (!playerState.isDocked && !isDockingOpen() && !isStrandedOpen() &&
+            playerState.ship.fuel <= 0) {
+            const speed = getSpeed();
+            // Show stranded UI when nearly stopped
+            if (speed < 5) {
+                openStranded();
+            }
         }
     });
 }
 
-async function handleDock(stationId) {
+async function handleDockSuccess(stationId) {
     try {
         await api.dock(stationId);
         await autoSave();

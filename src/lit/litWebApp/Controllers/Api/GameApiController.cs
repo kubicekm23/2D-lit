@@ -412,6 +412,73 @@ public class GameApiController : ControllerBase
         return Ok();
     }
 
+    [HttpPost("respawn")]
+    public async Task<IActionResult> Respawn([FromBody] RespawnDto dto)
+    {
+        var user = await _db.Users
+            .Include(u => u.Ships).ThenInclude(s => s.ShipType)
+            .Include(u => u.Ships).ThenInclude(s => s.HangarSpot)
+            .FirstOrDefaultAsync(u => u.Id == UserId);
+        if (user == null) return NotFound();
+
+        // Find nearest station for respawn location
+        var stations = await _db.Stations.ToListAsync();
+        if (stations.Count == 0) return BadRequest("No stations exist.");
+
+        var currentShip = user.Ships.FirstOrDefault(s => s.IsActive);
+
+        ShipModel targetShip;
+        if (dto.ShipId.HasValue)
+        {
+            // Switch to an owned ship
+            targetShip = user.Ships.FirstOrDefault(s => s.Id == dto.ShipId.Value);
+            if (targetShip == null) return BadRequest("Ship not found.");
+        }
+        else
+        {
+            // No ship specified - use current ship (just respawn it)
+            if (currentShip == null) return BadRequest("No active ship.");
+            targetShip = currentShip;
+        }
+
+        // Find nearest station to current ship position
+        float shipX = currentShip?.PositionX ?? 0;
+        float shipY = currentShip?.PositionY ?? 0;
+        var nearestStation = stations.OrderBy(s =>
+            MathF.Pow(s.CoordinateX - shipX, 2) + MathF.Pow(s.CoordinateY - shipY, 2)
+        ).First();
+
+        // Deactivate all ships
+        foreach (var s in user.Ships) s.IsActive = false;
+
+        // Remove any hangar spot from target ship
+        if (targetShip.HangarSpot != null)
+            _db.HangarSpots.Remove(targetShip.HangarSpot);
+
+        // Activate and teleport target ship to nearest station
+        targetShip.IsActive = true;
+        targetShip.PositionX = nearestStation.CoordinateX;
+        targetShip.PositionY = nearestStation.CoordinateY;
+        targetShip.VelocityX = 0;
+        targetShip.VelocityY = 0;
+        targetShip.MnozstviPaliva = targetShip.ShipType.MaxPaliva * 0.2f; // 20% fuel
+        user.ActiveShipId = targetShip.Id;
+
+        // Dock at the station
+        var occupiedSpots = await _db.HangarSpots.CountAsync(h => h.StationId == nearestStation.Id);
+        if (occupiedSpots < nearestStation.HangarLimit)
+        {
+            _db.HangarSpots.Add(new HangarSpotModel
+            {
+                StationId = nearestStation.Id,
+                ShipId = targetShip.Id
+            });
+        }
+
+        await _db.SaveChangesAsync();
+        return Ok(new { credits = user.Credits, stationId = nearestStation.Id });
+    }
+
     [HttpGet("map")]
     public async Task<ActionResult<List<MapStationDto>>> GetMap()
     {

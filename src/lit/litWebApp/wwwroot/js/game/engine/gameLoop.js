@@ -8,6 +8,7 @@ import { renderStations } from '../renderer/stationRenderer.js';
 import { updateHud } from '../renderer/hudRenderer.js';
 import { playerState, getSpeedFraction } from '../world/playerState.js';
 import { worldState } from '../world/worldState.js';
+import { isDockingOpen } from '../ui/dockingMinigame.js';
 
 let lastTime = 0;
 let canvas = null;
@@ -34,8 +35,8 @@ function loop(timestamp) {
 
     resizeCanvas(canvas);
 
-    // Don't update physics when docked
-    if (!playerState.isDocked) {
+    // Don't update physics when docked or in docking minigame
+    if (!playerState.isDocked && !isDockingOpen()) {
         updatePhysics(dt);
     }
 
@@ -48,11 +49,13 @@ function loop(timestamp) {
     renderBackground(camera, playerState, getSpeedFraction());
     renderStations(camera, worldState, playerState);
 
-    if (!playerState.isDocked) {
+    if (!playerState.isDocked && !isDockingOpen()) {
         renderShip(camera, playerState);
     }
 
-    updateHud(playerState, worldState);
+    if (!isDockingOpen()) {
+        updateHud(playerState, worldState);
+    }
 
     if (onFrameCallback) onFrameCallback(dt);
 

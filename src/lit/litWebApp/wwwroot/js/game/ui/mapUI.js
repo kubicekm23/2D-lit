@@ -62,7 +62,7 @@ function drawMap() {
     const w = canvas.width;
     const h = canvas.height;
     ctx.clearRect(0, 0, w, h);
-    ctx.fillStyle = '#fff';
+    ctx.fillStyle = '#080818';
     ctx.fillRect(0, 0, w, h);
 
     const cx = w / 2;
@@ -84,7 +84,7 @@ function drawMap() {
     // World boundary
     const [bx0, by0] = worldToMap(worldState.minX, worldState.maxY);
     const [bx1, by1] = worldToMap(worldState.maxX, worldState.minY);
-    ctx.strokeStyle = '#ccc';
+    ctx.strokeStyle = '#334';
     ctx.lineWidth = 1;
     ctx.strokeRect(bx0, by0, bx1 - bx0, by1 - by0);
 
@@ -99,13 +99,13 @@ function drawMap() {
         ctx.arc(sx, sy, visited ? 6 : 4, 0, Math.PI * 2);
 
         if (visited) {
-            ctx.fillStyle = '#222';
+            ctx.fillStyle = '#8af';
             ctx.fill();
             ctx.font = '11px monospace';
-            ctx.fillStyle = '#333';
+            ctx.fillStyle = '#99b';
             ctx.fillText(st.name, sx + 10, sy + 4);
         } else {
-            ctx.strokeStyle = '#999';
+            ctx.strokeStyle = '#556';
             ctx.lineWidth = 1;
             ctx.stroke();
         }
@@ -115,12 +115,12 @@ function drawMap() {
     const [px, py] = worldToMap(playerState.ship.x, playerState.ship.y);
     ctx.beginPath();
     ctx.arc(px, py, 5, 0, Math.PI * 2);
-    ctx.fillStyle = '#c00';
+    ctx.fillStyle = '#f44';
     ctx.fill();
 
     // Legend
     ctx.font = '12px monospace';
-    ctx.fillStyle = '#000';
+    ctx.fillStyle = '#778';
     ctx.fillText('M - Close Map | Scroll to zoom | Drag to pan', 10, h - 10);
 }
 

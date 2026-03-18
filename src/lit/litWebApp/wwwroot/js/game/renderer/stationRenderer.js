@@ -107,11 +107,11 @@ export function renderStations(camera, worldState, playerState) {
         gl.uniform2f(stationLoc.stationPos, station.x, station.y);
         gl.uniform1f(stationLoc.scale, STATION_SCALE);
 
-        // Color: darker when in range
+        // Color: bright when in range, dim when far
         if (inRange) {
-            gl.uniform4f(stationLoc.color, 0.1, 0.1, 0.1, 1.0);
+            gl.uniform4f(stationLoc.color, 0.8, 0.85, 1.0, 1.0);
         } else {
-            gl.uniform4f(stationLoc.color, 0.4, 0.4, 0.4, 1.0);
+            gl.uniform4f(stationLoc.color, 0.35, 0.35, 0.45, 1.0);
         }
 
         gl.drawArrays(gl.TRIANGLES, 0, stationVerts);

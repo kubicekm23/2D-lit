@@ -108,6 +108,11 @@ public class BuyShipDto
     public int ShipTypeId { get; set; }
 }
 
+public class RespawnDto
+{
+    public int? ShipId { get; set; }
+}
+
 public class MapStationDto
 {
     public int StationId { get; set; }

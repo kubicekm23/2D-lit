@@ -74,6 +74,13 @@ export async function undock(stationId) {
     });
 }
 
+export async function respawn(shipId) {
+    return request('/api/game/respawn', {
+        method: 'POST',
+        body: JSON.stringify({ shipId: shipId || null }),
+    });
+}
+
 export async function getMap() {
     return request('/api/game/map');
 }

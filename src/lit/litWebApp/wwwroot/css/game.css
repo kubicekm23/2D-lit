@@ -6,9 +6,9 @@
 
 body {
     overflow: hidden;
-    background: #fff;
+    background: #050510;
     font-family: 'Courier New', monospace;
-    color: #000;
+    color: #ccd;
 }
 
 #gameCanvas {
@@ -57,9 +57,9 @@ body {
 }
 
 #hud-station {
-    background: rgba(255, 255, 255, 0.8);
+    background: rgba(5, 5, 16, 0.7);
     padding: 4px 12px;
-    border: 1px solid #999;
+    border: 1px solid #334;
 }
 
 /* ─── Station overlay ─────────────────── */
@@ -69,7 +69,7 @@ body {
     left: 0;
     width: 100vw;
     height: 100vh;
-    background: rgba(255, 255, 255, 0.95);
+    background: rgba(5, 5, 16, 0.95);
     z-index: 100;
     display: flex;
     align-items: center;
@@ -81,16 +81,17 @@ body {
     max-width: 800px;
     max-height: 90vh;
     overflow-y: auto;
-    border: 2px solid #000;
+    border: 1px solid #445;
     padding: 24px;
-    background: #fff;
+    background: #0a0a1a;
+    color: #ccd;
 }
 
 .station-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    border-bottom: 1px solid #000;
+    border-bottom: 1px solid #334;
     padding-bottom: 12px;
     margin-bottom: 16px;
 }
@@ -107,16 +108,17 @@ body {
 
 .tab-btn {
     padding: 8px 20px;
-    border: 1px solid #000;
-    background: #fff;
+    border: 1px solid #445;
+    background: #0a0a1a;
+    color: #ccd;
     cursor: pointer;
     font-family: inherit;
     font-size: 13px;
 }
 
 .tab-btn.active {
-    background: #000;
-    color: #fff;
+    background: #334;
+    color: #eef;
 }
 
 .station-content {
@@ -126,14 +128,15 @@ body {
 .station-footer {
     margin-top: 24px;
     text-align: center;
-    border-top: 1px solid #000;
+    border-top: 1px solid #334;
     padding-top: 16px;
 }
 
 .btn-launch {
     padding: 12px 48px;
-    border: 2px solid #000;
-    background: #fff;
+    border: 1px solid #4a6;
+    background: #0a0a1a;
+    color: #4a6;
     font-family: inherit;
     font-size: 16px;
     cursor: pointer;
@@ -142,8 +145,8 @@ body {
 }
 
 .btn-launch:hover {
-    background: #000;
-    color: #fff;
+    background: #4a6;
+    color: #0a0a1a;
 }
 
 /* Market */
@@ -155,7 +158,7 @@ body {
 
 .market-section h4 {
     margin-bottom: 8px;
-    border-bottom: 1px solid #ccc;
+    border-bottom: 1px solid #334;
     padding-bottom: 4px;
 }
 
@@ -168,30 +171,33 @@ body {
 .market-table th,
 .market-table td {
     padding: 4px 8px;
-    border-bottom: 1px solid #eee;
+    border-bottom: 1px solid #223;
     text-align: left;
 }
 
 .qty-input {
     width: 50px;
     padding: 2px 4px;
-    border: 1px solid #999;
+    border: 1px solid #445;
+    background: #111;
+    color: #ccd;
     font-family: inherit;
     font-size: 12px;
 }
 
 .btn-trade {
     padding: 2px 10px;
-    border: 1px solid #000;
-    background: #fff;
+    border: 1px solid #445;
+    background: #0a0a1a;
+    color: #ccd;
     cursor: pointer;
     font-family: inherit;
     font-size: 12px;
 }
 
 .btn-trade:hover {
-    background: #000;
-    color: #fff;
+    background: #334;
+    color: #eef;
 }
 
 /* Shipyard */
@@ -203,8 +209,8 @@ body {
 
 .current-ship {
     padding: 8px;
-    border: 1px solid #000;
-    background: #f5f5f5;
+    border: 1px solid #445;
+    background: #111125;
 }
 
 .current-ship h4 {
@@ -218,12 +224,13 @@ body {
 }
 
 .ship-card {
-    border: 1px solid #999;
+    border: 1px solid #334;
     padding: 10px;
+    background: #0d0d1d;
 }
 
 .ship-card.owned {
-    border-color: #000;
+    border-color: #8af;
     border-width: 2px;
 }
 
@@ -233,7 +240,7 @@ body {
 
 .ship-card p {
     font-size: 12px;
-    color: #666;
+    color: #889;
     margin-bottom: 6px;
 }
 
@@ -247,15 +254,16 @@ body {
 
 .btn-buy-ship {
     padding: 4px 12px;
-    border: 1px solid #000;
-    background: #fff;
+    border: 1px solid #445;
+    background: #0a0a1a;
+    color: #ccd;
     cursor: pointer;
     font-family: inherit;
 }
 
 .btn-buy-ship:hover {
-    background: #000;
-    color: #fff;
+    background: #334;
+    color: #eef;
 }
 
 /* Services */
@@ -266,20 +274,21 @@ body {
 .services-section button {
     padding: 8px 24px;
     margin-top: 8px;
-    border: 1px solid #000;
-    background: #fff;
+    border: 1px solid #445;
+    background: #0a0a1a;
+    color: #ccd;
     cursor: pointer;
     font-family: inherit;
 }
 
 .services-section button:hover:not(:disabled) {
-    background: #000;
-    color: #fff;
+    background: #334;
+    color: #eef;
 }
 
 .services-section button:disabled {
-    color: #999;
-    border-color: #999;
+    color: #556;
+    border-color: #334;
     cursor: default;
 }
 
@@ -290,7 +299,7 @@ body {
     left: 0;
     width: 100vw;
     height: 100vh;
-    background: rgba(255, 255, 255, 0.97);
+    background: rgba(5, 5, 16, 0.97);
     z-index: 90;
     display: flex;
     align-items: center;
@@ -300,7 +309,7 @@ body {
 .map-container {
     width: 90%;
     height: 85%;
-    border: 2px solid #000;
+    border: 1px solid #445;
 }
 
 #map-canvas {
@@ -311,4 +320,109 @@ body {
 
 #map-canvas:active {
     cursor: grabbing;
+}
+
+/* ─── Stranded overlay ───────────────── */
+#stranded-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(10, 0, 0, 0.92);
+    z-index: 110;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.stranded-panel {
+    max-width: 500px;
+    width: 90%;
+    border: 1px solid #633;
+    padding: 32px;
+    background: #0a0808;
+    color: #daa;
+    text-align: center;
+}
+
+.stranded-header h2 {
+    font-size: 28px;
+    color: #f55;
+    letter-spacing: 6px;
+    margin-bottom: 16px;
+}
+
+.stranded-header p {
+    margin-bottom: 8px;
+    color: #a88;
+}
+
+.stranded-coords {
+    font-size: 12px;
+    color: #776 !important;
+}
+
+.stranded-content {
+    margin-top: 24px;
+    text-align: left;
+}
+
+.stranded-content h4 {
+    border-bottom: 1px solid #433;
+    padding-bottom: 6px;
+    margin-bottom: 12px;
+    color: #daa;
+}
+
+.stranded-content p {
+    font-size: 13px;
+    color: #a88;
+    margin-bottom: 8px;
+}
+
+.stranded-ships {
+    margin: 16px 0;
+}
+
+.btn-respawn-ship,
+#btn-respawn-current {
+    display: block;
+    width: 100%;
+    padding: 10px 16px;
+    margin-bottom: 6px;
+    border: 1px solid #554;
+    background: #151010;
+    color: #cca;
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 13px;
+    text-align: left;
+}
+
+.btn-respawn-ship:hover,
+#btn-respawn-current:hover {
+    background: #2a2020;
+    border-color: #886;
+    color: #eec;
+}
+
+.stranded-current {
+    margin-top: 16px;
+}
+
+/* ─── Docking minigame overlay ───────── */
+#docking-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: #020208;
+    z-index: 95;
+}
+
+#docking-canvas {
+    width: 100%;
+    height: 100%;
 }

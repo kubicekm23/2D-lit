@@ -9,8 +9,8 @@ export function initWebGL(canvas) {
         throw new Error('WebGL not supported');
     }
 
-    // White background (space is white)
-    gl.clearColor(1.0, 1.0, 1.0, 1.0);
+    // Dark space background
+    gl.clearColor(0.02, 0.02, 0.06, 1.0);
     gl.enable(gl.BLEND);
     gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
 
