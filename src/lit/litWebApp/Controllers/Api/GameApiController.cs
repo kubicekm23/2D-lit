@@ -360,6 +360,12 @@ public class GameApiController : ControllerBase
         user.Credits -= shipType.Price;
         stock.StockCount--;
 
+        // Calculate current cargo weight
+        var cargoList = currentShip.Cargos.ToList();
+        var totalWeight = cargoList.Sum(c => c.Quantity * c.CargoType.Vaha);
+        if (totalWeight > shipType.CargoHold)
+            return BadRequest("New ship does not have enough cargo space for your current load.");
+
         // Deactivate current ship
         currentShip.IsActive = false;
 
@@ -376,6 +382,12 @@ public class GameApiController : ControllerBase
         };
         _db.Ships.Add(newShip);
         await _db.SaveChangesAsync();
+
+        // Transfer cargo
+        foreach (var cargo in cargoList)
+        {
+            cargo.ShipId = newShip.Id;
+        }
 
         // Dock new ship at station, undock old one
         var oldSpot = currentShip.HangarSpot;

@@ -356,12 +356,12 @@ function resolveWallCollision() {
             ship.vx = Math.abs(ship.vx) * 0.3;
             hit = true;
         } else {
+            // In entrance - no bounce on left/right but bounce on corners
             if (ship.y < entranceTop + s) {
                 ship.y = entranceTop + s;
                 ship.vy = Math.abs(ship.vy) * 0.3;
                 hit = true;
-            }
-            if (ship.y > entranceBottom - s) {
+            } else if (ship.y > entranceBottom - s) {
                 ship.y = entranceBottom - s;
                 ship.vy = -Math.abs(ship.vy) * 0.3;
                 hit = true;

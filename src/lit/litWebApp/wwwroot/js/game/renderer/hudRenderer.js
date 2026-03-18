@@ -76,11 +76,11 @@ export function updateHud(playerState, worldState) {
         if (nearestStation && minDist < ATC_RANGE) {
             elements.stationInfo.textContent = `${nearestStation.name} — ${Math.round(minDist)}Ls — [F] Request Docking`;
             elements.stationInfo.style.color = '#000';
-            elements.stationInfo.style.display = '';
+            elements.stationInfo.style.display = 'block';
         } else if (nearestStation) {
             elements.stationInfo.textContent = `${nearestStation.name} — ${Math.round(minDist)}Ls`;
             elements.stationInfo.style.color = '#999';
-            elements.stationInfo.style.display = '';
+            elements.stationInfo.style.display = 'block';
         } else {
             elements.stationInfo.textContent = '';
             elements.stationInfo.style.display = 'none';

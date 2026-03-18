@@ -21,8 +21,14 @@ export function updatePhysics(dt) {
         ship.vx += dirX * type.thrustPower * dt;
         ship.vy += dirY * type.thrustPower * dt;
         ship.fuel -= type.fuelEfficiency * dt;
-        if (ship.fuel < 0) ship.fuel = 0;
     }
+
+    // Passive fuel drain (life support)
+    if (!playerState.isDocked && ship.fuel > 0) {
+        ship.fuel -= 0.01 * dt;
+    }
+
+    if (ship.fuel < 0) ship.fuel = 0;
 
     // Brake (S key) - simple deceleration toward zero
     if (input.down) {
