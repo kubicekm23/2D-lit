@@ -16,7 +16,11 @@ export function initPauseMenu() {
 
     document.getElementById('btn-resume').addEventListener('click', closePauseMenu);
     document.getElementById('btn-logout').addEventListener('click', () => {
-        window.location.href = '/Auth/Logout';
+        const form = document.createElement('form');
+        form.method = 'POST';
+        form.action = '/Auth/Logout';
+        document.body.appendChild(form);
+        form.submit();
     });
 }
 
