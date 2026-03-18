@@ -29,18 +29,19 @@ export function closeStranded() {
 }
 
 function renderStranded() {
+    const isDestroyed = playerState.ship.hull <= 0;
     const ownedShips = playerState.ownedShips.filter(s => !s.isActive);
 
     overlay.innerHTML = `
-        <div class="stranded-panel">
+        <div class="stranded-panel" style="${isDestroyed ? 'border-color: #c00;' : ''}">
             <div class="stranded-header">
-                <h2>STRANDED</h2>
-                <p>Your ship has run out of fuel and you are adrift in space.</p>
+                <h2 style="${isDestroyed ? 'color: #c00;' : ''}">${isDestroyed ? 'SHIP DESTROYED' : 'STRANDED'}</h2>
+                <p>${isDestroyed ? 'Your ship hull integrity has been compromised. All systems offline.' : 'Your ship has run out of fuel and you are adrift in space.'}</p>
                 <p class="stranded-coords">Location: X:${Math.round(playerState.ship.x)} Y:${Math.round(playerState.ship.y)}</p>
             </div>
             <div class="stranded-content">
                 <h4>Abandon Ship</h4>
-                <p>You will be transported to the nearest station.</p>
+                <p>${isDestroyed ? 'You will be recovered and transported to the nearest station.' : 'You will be transported to the nearest station.'}</p>
                 ${ownedShips.length > 0 ? `
                     <div class="stranded-ships">
                         <p>Switch to one of your other ships:</p>
@@ -52,7 +53,7 @@ function renderStranded() {
                     </div>
                 ` : ''}
                 <div class="stranded-current">
-                    <button id="btn-respawn-current">Respawn current ship at nearest station</button>
+                    <button id="btn-respawn-current">${isDestroyed ? 'Recover & Repair current ship (nearest station)' : 'Respawn current ship at nearest station'}</button>
                 </div>
             </div>
         </div>

@@ -112,14 +112,21 @@ public class GameApiController : ControllerBase
     [HttpPost("save")]
     public async Task<IActionResult> SavePosition([FromBody] SavePositionDto dto)
     {
-        var ship = await _db.Ships.FirstOrDefaultAsync(s => s.UserId == UserId && s.IsActive);
+        var ship = await _db.Ships
+            .Include(s => s.HangarSpot)
+            .FirstOrDefaultAsync(s => s.UserId == UserId && s.IsActive);
         if (ship == null) return NotFound();
 
-        ship.PositionX = dto.X;
-        ship.PositionY = dto.Y;
-        ship.Rotation = dto.Rotation;
-        ship.VelocityX = dto.Vx;
-        ship.VelocityY = dto.Vy;
+        // If docked, we don't allow changing position/velocity via this API
+        if (ship.HangarSpot == null)
+        {
+            ship.PositionX = dto.X;
+            ship.PositionY = dto.Y;
+            ship.Rotation = dto.Rotation;
+            ship.VelocityX = dto.Vx;
+            ship.VelocityY = dto.Vy;
+        }
+
         ship.MnozstviPaliva = dto.Fuel;
         ship.Hull = dto.Hull;
 
@@ -359,7 +366,7 @@ public class GameApiController : ControllerBase
     }
 
     [HttpPost("station/{id}/dock")]
-    public async Task<IActionResult> Dock(int id)
+    public async Task<IActionResult> Dock(int id, [FromBody] SavePositionDto dto)
     {
         var ship = await _db.Ships
             .Include(s => s.HangarSpot)
@@ -393,6 +400,8 @@ public class GameApiController : ControllerBase
         ship.PositionY = station.CoordinateY;
         ship.VelocityX = 0;
         ship.VelocityY = 0;
+        ship.MnozstviPaliva = dto.Fuel;
+        ship.Hull = dto.Hull;
 
         await _db.SaveChangesAsync();
         return Ok();
@@ -494,7 +503,8 @@ public class GameApiController : ControllerBase
         targetShip.PositionY = nearestStation.CoordinateY;
         targetShip.VelocityX = 0;
         targetShip.VelocityY = 0;
-        targetShip.MnozstviPaliva = targetShip.ShipType.MaxPaliva * 0.2f; // 20% fuel
+        targetShip.MnozstviPaliva = targetShip.ShipType.MaxPaliva * 0.4f; // 40% fuel
+        targetShip.Hull = 100f; // Fully repaired upon recovery
         user.ActiveShipId = targetShip.Id;
 
         // Dock at the station

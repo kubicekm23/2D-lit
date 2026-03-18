@@ -68,9 +68,10 @@ export async function buyShip(stationId, shipTypeId) {
     });
 }
 
-export async function dock(stationId) {
+export async function dock(stationId, shipData) {
     return request(`/api/game/station/${stationId}/dock`, {
         method: 'POST',
+        body: JSON.stringify(shipData),
     });
 }
 

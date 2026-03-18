@@ -48,19 +48,32 @@ export function updatePhysics(dt) {
     ship.y += ship.vy * dt;
 
     // World bounds (elastic bounce)
+    let hit = false;
     if (ship.x < WORLD_MIN_X) {
         ship.x = WORLD_MIN_X;
         ship.vx *= WORLD_BOUNCE_FACTOR;
+        hit = true;
     } else if (ship.x > WORLD_MAX_X) {
         ship.x = WORLD_MAX_X;
         ship.vx *= WORLD_BOUNCE_FACTOR;
+        hit = true;
     }
 
     if (ship.y < WORLD_MIN_Y) {
         ship.y = WORLD_MIN_Y;
         ship.vy *= WORLD_BOUNCE_FACTOR;
+        hit = true;
     } else if (ship.y > WORLD_MAX_Y) {
         ship.y = WORLD_MAX_Y;
         ship.vy *= WORLD_BOUNCE_FACTOR;
+        hit = true;
+    }
+
+    if (hit) {
+        const speed = Math.sqrt(ship.vx * ship.vx + ship.vy * ship.vy);
+        if (speed > 100) {
+            ship.hull -= (speed - 100) * 0.05;
+            if (ship.hull < 0) ship.hull = 0;
+        }
     }
 }

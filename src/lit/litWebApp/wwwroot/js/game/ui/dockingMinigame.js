@@ -464,12 +464,12 @@ function updateAI(dt, cw, ch) {
 function draw(cw, ch) {
     ctx.clearRect(0, 0, cw, ch);
 
-    // Dark background
-    ctx.fillStyle = '#020210';
+    // White background
+    ctx.fillStyle = '#ffffff';
     ctx.fillRect(0, 0, cw, ch);
 
-    // Background stars
-    ctx.fillStyle = '#335';
+    // Background stars (grey on white)
+    ctx.fillStyle = '#bbbcce';
     for (let i = 0; i < 60; i++) {
         const sx = ((i * 137.5) % cw);
         const sy = ((i * 211.3) % ch);
@@ -478,7 +478,7 @@ function draw(cw, ch) {
 
     // Crash flash
     if (crashFlashTimer > 0) {
-        const alpha = crashFlashTimer * 0.6;
+        const alpha = crashFlashTimer * 0.4;
         ctx.fillStyle = `rgba(255, 50, 0, ${alpha})`;
         ctx.fillRect(0, 0, cw, ch);
     }
@@ -501,17 +501,17 @@ function drawStation(cw, ch) {
     ctx.fillStyle = '#2a2a3a';
     ctx.fillRect(stX, stY, STATION_W, STATION_H);
 
-    // Inner space
+    // Inner space (white, like space)
     const innerLeft = stX + WALL_THICK;
     const innerTop = stY + WALL_THICK;
     const innerW = STATION_W - 2 * WALL_THICK;
     const innerH = STATION_H - 2 * WALL_THICK;
-    ctx.fillStyle = '#0a0a18';
+    ctx.fillStyle = '#ffffff';
     ctx.fillRect(innerLeft, innerTop, innerW, innerH);
 
     // Entrance gap
     const entranceTop = stY + STATION_H / 2 - ENTRANCE_H / 2;
-    ctx.fillStyle = '#0a0a18';
+    ctx.fillStyle = '#ffffff';
     ctx.fillRect(stX, entranceTop, WALL_THICK, ENTRANCE_H);
 
     // Entrance markers (blinking lights)
@@ -628,10 +628,10 @@ function drawPlayerShip() {
     if (crashFlashTimer > 0) {
         ctx.fillStyle = '#f44';
     } else {
-        ctx.fillStyle = '#dde';
+        ctx.fillStyle = '#000000'; // Solid black like in the main game
     }
     ctx.fill();
-    ctx.strokeStyle = '#8af';
+    ctx.strokeStyle = '#444'; // Darker stroke for contrast
     ctx.lineWidth = 1;
     ctx.stroke();
 
@@ -641,7 +641,7 @@ function drawPlayerShip() {
         ctx.moveTo(-s * 0.6, -s * 0.2);
         ctx.lineTo(-s * (0.8 + Math.random() * 0.4), 0);
         ctx.lineTo(-s * 0.6, s * 0.2);
-        ctx.fillStyle = `rgba(100, 180, 255, ${0.5 + Math.random() * 0.3})`;
+        ctx.fillStyle = `rgba(120, 180, 255, ${0.4 + Math.random() * 0.2})`; // Slightly more subtle
         ctx.fill();
     }
 
@@ -667,9 +667,9 @@ function drawAIShips() {
         ctx.lineTo(-s * 0.6, s * 0.35);
         ctx.closePath();
 
-        ctx.fillStyle = '#665';
+        ctx.fillStyle = '#333333'; // Dark grey AI
         ctx.fill();
-        ctx.strokeStyle = '#887';
+        ctx.strokeStyle = '#222';
         ctx.lineWidth = 1;
         ctx.stroke();
 

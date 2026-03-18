@@ -32,6 +32,15 @@ public class Program
         {
             var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
             await db.Database.EnsureCreatedAsync();
+
+            // Add Hull column to existing databases (EnsureCreated won't alter existing tables)
+            try
+            {
+                await db.Database.ExecuteSqlRawAsync(
+                    "ALTER TABLE \"Ships\" ADD COLUMN IF NOT EXISTS \"Hull\" real NOT NULL DEFAULT 100");
+            }
+            catch { /* column already exists or DB just created */ }
+
             await SeedDataService.SeedAsync(db);
             await WorldGenerationService.GenerateWorldAsync(db);
         }

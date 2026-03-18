@@ -102,13 +102,15 @@ async function init() {
             }
         }
 
-        // Stranded check - fuel empty while flying
-        if (!playerState.isDocked && !isDockingOpen() && !isStrandedOpen() &&
-            playerState.ship.fuel <= 0) {
-            const speed = getSpeed();
-            // Show stranded UI when nearly stopped
-            if (speed < 5) {
-                openStranded();
+        // Stranded or Destroyed check
+        if (!playerState.isDocked && !isDockingOpen() && !isStrandedOpen()) {
+            if (playerState.ship.hull <= 0) {
+                handleShipDestroyed();
+            } else if (playerState.ship.fuel <= 0) {
+                const speed = getSpeed();
+                if (speed < 5) {
+                    openStranded();
+                }
             }
         }
     });
@@ -123,9 +125,12 @@ function handleShipDestroyed() {
 
 async function handleDockSuccess(stationId) {
     setOverlayActive(false);
+    const ship = playerState.ship;
     try {
-        await api.dock(stationId);
-        await autoSave();
+        await api.dock(stationId, {
+            x: ship.x, y: ship.y, rotation: ship.rotation,
+            vx: ship.vx, vy: ship.vy, fuel: ship.fuel, hull: ship.hull,
+        });
         const pd = await api.getPlayer();
         loadPlayer(pd);
         openStation(stationId);
@@ -155,12 +160,23 @@ async function autoSave() {
 window.addEventListener('beforeunload', () => {
     if (!playerState.isDocked) {
         const ship = playerState.ship;
-        navigator.sendBeacon('/api/game/save', JSON.stringify({
+        const data = JSON.stringify({
             x: ship.x, y: ship.y, rotation: ship.rotation,
             vx: ship.vx, vy: ship.vy, fuel: ship.fuel, hull: ship.hull,
-        }));
+        });
+        const blob = new Blob([data], { type: 'application/json' });
+        navigator.sendBeacon('/api/game/save', blob);
     }
 });
 
 // Start
-init().catch(e => console.error('Game init failed:', e));
+init().catch(e => {
+    console.error('Game init failed:', e);
+    document.body.innerHTML = `<div style="padding:40px;font-family:monospace;">
+        <h2>Game failed to load</h2>
+        <p>${e.message || e}</p>
+        <p>Check the browser console for details.</p>
+        <button onclick="location.reload()" style="padding:8px 16px;margin-top:12px;cursor:pointer;">Retry</button>
+        <button onclick="location.href='/Auth/Logout'" style="padding:8px 16px;margin-top:12px;cursor:pointer;">Logout</button>
+    </div>`;
+});

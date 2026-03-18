@@ -186,6 +186,11 @@ function renderServicesTab() {
                 ${hullDamage <= 0 ? 'Hull Intact' : 'Repair'}
             </button>
         </div>
+        <div class="services-section" style="border-top: 1px solid #eee; margin-top: 20px; padding-top: 20px;">
+            <h4>Emergency Services</h4>
+            <p style="font-size: 12px; color: #666;">If you are unable to proceed, you can abandon this ship and be recovered at the nearest station.</p>
+            <button id="btn-abandon-ship" class="pause-btn-danger" style="margin-top: 10px;">Abandon Ship</button>
+        </div>
     `;
 }
 
@@ -195,7 +200,7 @@ function bindTabEvents(tab) {
             btn.addEventListener('click', async () => {
                 const cargoId = parseInt(btn.dataset.cargo);
                 const action = btn.dataset.action;
-                const input = overlay.querySelector(`.qty-input[data-cargo="${cargoId}"][data-action="${action}"]`);
+                const input = overlay.querySelector(\`.qty-input[data-cargo="\${cargoId}"][data-action="\${action}"]\`);
                 const qty = parseInt(input?.value || '1');
 
                 try {
@@ -259,6 +264,16 @@ function bindTabEvents(tab) {
                     renderStationUI();
                 } catch (e) {
                     alert(e.message);
+                }
+            });
+        }
+
+        const abandonBtn = document.getElementById('btn-abandon-ship');
+        if (abandonBtn) {
+            abandonBtn.addEventListener('click', () => {
+                if (confirm('Are you sure you want to abandon ship? You will be transported to the nearest station.')) {
+                    closeStation();
+                    import('./strandedUI.js').then(m => m.openStranded());
                 }
             });
         }
