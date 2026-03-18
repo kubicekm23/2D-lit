@@ -10,7 +10,7 @@ export function initPauseMenu() {
             <h2>PAUSED</h2>
             <button id="btn-resume" class="pause-btn">Resume</button>
             <button id="btn-logout" class="pause-btn pause-btn-danger">Logout</button>
-            <p class="pause-hint">ESC - Resume</p>
+            <p class="pause-hint">ESC — Resume &nbsp; M — Map &nbsp; F — Dock</p>
         </div>
     `;
 

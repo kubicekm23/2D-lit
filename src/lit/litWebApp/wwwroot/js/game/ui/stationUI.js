@@ -186,10 +186,10 @@ function renderServicesTab() {
                 ${hullDamage <= 0 ? 'Hull Intact' : 'Repair'}
             </button>
         </div>
-        <div class="services-section" style="border-top: 1px solid #eee; margin-top: 20px; padding-top: 20px;">
+        <div class="services-section">
             <h4>Emergency Services</h4>
-            <p style="font-size: 12px; color: #666;">If you are unable to proceed, you can abandon this ship and be recovered at the nearest station.</p>
-            <button id="btn-abandon-ship" class="pause-btn-danger" style="margin-top: 10px;">Abandon Ship</button>
+            <p>If you are unable to proceed, you can abandon this ship and be recovered at the nearest station.</p>
+            <button id="btn-abandon-ship" class="pause-btn-danger">Abandon Ship</button>
         </div>
     `;
 }

@@ -21,8 +21,15 @@ export function clearFrameInput() {
     pressedThisFrame = {};
 }
 
+const gameKeys = new Set([
+    'KeyW', 'KeyA', 'KeyS', 'KeyD', 'KeyF', 'KeyM',
+    'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight',
+    'Escape', 'Space',
+]);
+
 export function initInput() {
     window.addEventListener('keydown', (e) => {
+        if (gameKeys.has(e.code)) e.preventDefault();
         if (!keys[e.code]) {
             pressedThisFrame[e.code] = true;
         }

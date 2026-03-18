@@ -15,7 +15,7 @@ namespace litWebApp.Controllers.Api;
 public class GameApiController : ControllerBase
 {
     private readonly AppDbContext _db;
-    private const float StationInteractionRange = 500f;
+    private const float StationInteractionRange = 850f;
     private const decimal FuelPricePerUnit = 5m;
 
     public GameApiController(AppDbContext db)

@@ -1,5 +1,5 @@
 import { distance } from '../utils/math.js';
-import { ATC_RANGE, LANDING_RANGE, LANDING_MAX_SPEED } from '../utils/constants.js';
+import { ATC_RANGE } from '../utils/constants.js';
 
 let elements = {};
 let nearestStation = null;
@@ -57,19 +57,11 @@ export function updateHud(playerState, worldState) {
 
     if (elements.stationInfo) {
         if (nearestStation && minDist < ATC_RANGE) {
-            if (minDist < LANDING_RANGE && speed < LANDING_MAX_SPEED) {
-                elements.stationInfo.textContent = `${nearestStation.name} - ${Math.round(minDist)}u - Press F to dock`;
-                elements.stationInfo.style.color = '#060';
-            } else if (minDist < LANDING_RANGE) {
-                elements.stationInfo.textContent = `${nearestStation.name} - ${Math.round(minDist)}u - Slow down to dock`;
-                elements.stationInfo.style.color = '#960';
-            } else {
-                elements.stationInfo.textContent = `${nearestStation.name} - ${Math.round(minDist)}u - Press F to request docking`;
-                elements.stationInfo.style.color = '#000';
-            }
+            elements.stationInfo.textContent = `${nearestStation.name} — ${Math.round(minDist)}u — [F] Request Docking`;
+            elements.stationInfo.style.color = '#000';
         } else if (nearestStation) {
-            elements.stationInfo.textContent = `${nearestStation.name} - ${Math.round(minDist)}u`;
-            elements.stationInfo.style.color = '#666';
+            elements.stationInfo.textContent = `${nearestStation.name} — ${Math.round(minDist)}u`;
+            elements.stationInfo.style.color = '#999';
         } else {
             elements.stationInfo.textContent = '';
         }

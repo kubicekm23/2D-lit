@@ -32,34 +32,45 @@ body {
 
 #hud-top-left {
     position: absolute;
-    top: 16px;
-    left: 16px;
-    font-size: 14px;
-    line-height: 1.6;
+    top: 14px;
+    left: 14px;
+    font-size: 13px;
+    line-height: 1.7;
+    background: rgba(255, 255, 255, 0.7);
+    padding: 6px 10px;
+    border: 1px solid #ddd;
 }
 
 #hud-top-right {
     position: absolute;
-    top: 16px;
-    right: 16px;
+    top: 14px;
+    right: 14px;
     text-align: right;
-    font-size: 14px;
-    line-height: 1.6;
+    font-size: 13px;
+    line-height: 1.7;
+    background: rgba(255, 255, 255, 0.7);
+    padding: 6px 10px;
+    border: 1px solid #ddd;
 }
 
 #hud-bottom {
     position: absolute;
-    bottom: 24px;
+    bottom: 20px;
     left: 50%;
     transform: translateX(-50%);
     text-align: center;
-    font-size: 14px;
+    font-size: 13px;
 }
 
 #hud-station {
-    background: rgba(255, 255, 255, 0.8);
-    padding: 4px 12px;
-    border: 1px solid #999;
+    background: rgba(255, 255, 255, 0.85);
+    padding: 6px 16px;
+    border: 1px solid #bbb;
+    letter-spacing: 0.5px;
+}
+
+#hud-station:empty {
+    display: none;
 }
 
 /* ─── Station overlay ─────────────────── */
@@ -69,7 +80,7 @@ body {
     left: 0;
     width: 100vw;
     height: 100vh;
-    background: rgba(255, 255, 255, 0.95);
+    background: rgba(245, 245, 245, 0.97);
     z-index: 100;
     display: flex;
     align-items: center;
@@ -78,67 +89,86 @@ body {
 
 .station-panel {
     width: 90%;
-    max-width: 800px;
+    max-width: 780px;
     max-height: 90vh;
     overflow-y: auto;
-    border: 2px solid #000;
-    padding: 24px;
+    border: 1px solid #000;
+    padding: 28px 32px;
     background: #fff;
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.08);
 }
 
 .station-header {
     display: flex;
     justify-content: space-between;
-    align-items: center;
-    border-bottom: 1px solid #000;
-    padding-bottom: 12px;
-    margin-bottom: 16px;
+    align-items: baseline;
+    border-bottom: 2px solid #000;
+    padding-bottom: 14px;
+    margin-bottom: 20px;
 }
 
 .station-header h2 {
-    font-size: 22px;
+    font-size: 20px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+}
+
+.station-header span {
+    font-size: 14px;
+    color: #444;
 }
 
 .station-tabs {
     display: flex;
-    gap: 4px;
-    margin-bottom: 16px;
+    gap: 0;
+    margin-bottom: 20px;
+    border-bottom: 1px solid #ccc;
 }
 
 .tab-btn {
-    padding: 8px 20px;
-    border: 1px solid #000;
-    background: #fff;
+    padding: 10px 24px;
+    border: none;
+    border-bottom: 2px solid transparent;
+    background: none;
     cursor: pointer;
     font-family: inherit;
     font-size: 13px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: #888;
+    transition: color 0.15s, border-color 0.15s;
+}
+
+.tab-btn:hover {
+    color: #000;
 }
 
 .tab-btn.active {
-    background: #000;
-    color: #fff;
+    color: #000;
+    border-bottom-color: #000;
 }
 
 .station-content {
-    min-height: 300px;
+    min-height: 280px;
 }
 
 .station-footer {
-    margin-top: 24px;
+    margin-top: 28px;
     text-align: center;
-    border-top: 1px solid #000;
-    padding-top: 16px;
+    border-top: 1px solid #ddd;
+    padding-top: 20px;
 }
 
 .btn-launch {
-    padding: 12px 48px;
+    padding: 12px 56px;
     border: 2px solid #000;
     background: #fff;
     font-family: inherit;
-    font-size: 16px;
+    font-size: 14px;
     cursor: pointer;
-    letter-spacing: 2px;
+    letter-spacing: 3px;
     text-transform: uppercase;
+    transition: background 0.15s, color 0.15s;
 }
 
 .btn-launch:hover {
@@ -150,13 +180,16 @@ body {
 .market-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 24px;
+    gap: 28px;
 }
 
 .market-section h4 {
-    margin-bottom: 8px;
-    border-bottom: 1px solid #ccc;
-    padding-bottom: 4px;
+    margin-bottom: 10px;
+    font-size: 13px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    border-bottom: 1px solid #ddd;
+    padding-bottom: 6px;
 }
 
 .market-table {
@@ -165,28 +198,41 @@ body {
     font-size: 13px;
 }
 
-.market-table th,
+.market-table th {
+    padding: 6px 8px;
+    border-bottom: 1px solid #ccc;
+    text-align: left;
+    font-weight: normal;
+    color: #888;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
 .market-table td {
-    padding: 4px 8px;
-    border-bottom: 1px solid #eee;
+    padding: 6px 8px;
+    border-bottom: 1px solid #f0f0f0;
     text-align: left;
 }
 
 .qty-input {
-    width: 50px;
-    padding: 2px 4px;
-    border: 1px solid #999;
+    width: 48px;
+    padding: 3px 5px;
+    border: 1px solid #ccc;
     font-family: inherit;
     font-size: 12px;
+    text-align: center;
 }
 
 .btn-trade {
-    padding: 2px 10px;
+    padding: 3px 12px;
     border: 1px solid #000;
     background: #fff;
     cursor: pointer;
     font-family: inherit;
     font-size: 12px;
+    letter-spacing: 0.5px;
+    transition: background 0.15s, color 0.15s;
 }
 
 .btn-trade:hover {
@@ -198,28 +244,39 @@ body {
 .shipyard-grid {
     display: flex;
     flex-direction: column;
-    gap: 12px;
+    gap: 16px;
 }
 
 .current-ship {
-    padding: 8px;
+    padding: 12px 14px;
     border: 1px solid #000;
-    background: #f5f5f5;
+    background: #fafafa;
 }
 
 .current-ship h4 {
     margin-bottom: 4px;
+    font-size: 13px;
+}
+
+.current-ship p {
+    font-size: 12px;
+    color: #666;
 }
 
 .ships-list {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 8px;
+    gap: 10px;
 }
 
 .ship-card {
-    border: 1px solid #999;
-    padding: 10px;
+    border: 1px solid #ccc;
+    padding: 14px;
+    transition: border-color 0.15s;
+}
+
+.ship-card:hover {
+    border-color: #666;
 }
 
 .ship-card.owned {
@@ -229,12 +286,14 @@ body {
 
 .ship-card h5 {
     margin-bottom: 4px;
+    font-size: 13px;
+    letter-spacing: 0.5px;
 }
 
 .ship-card p {
-    font-size: 12px;
-    color: #666;
-    margin-bottom: 6px;
+    font-size: 11px;
+    color: #888;
+    margin-bottom: 8px;
 }
 
 .ship-stats {
@@ -242,15 +301,18 @@ body {
     flex-wrap: wrap;
     gap: 8px;
     font-size: 11px;
-    margin-bottom: 6px;
+    margin-bottom: 8px;
+    color: #555;
 }
 
 .btn-buy-ship {
-    padding: 4px 12px;
+    padding: 5px 14px;
     border: 1px solid #000;
     background: #fff;
     cursor: pointer;
     font-family: inherit;
+    font-size: 12px;
+    transition: background 0.15s, color 0.15s;
 }
 
 .btn-buy-ship:hover {
@@ -260,16 +322,36 @@ body {
 
 /* Services */
 .services-section {
-    padding: 12px;
+    padding: 14px 0;
+}
+
+.services-section + .services-section {
+    border-top: 1px solid #eee;
+}
+
+.services-section h4 {
+    font-size: 13px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    margin-bottom: 6px;
+}
+
+.services-section p {
+    font-size: 13px;
+    color: #555;
+    margin-bottom: 4px;
 }
 
 .services-section button {
-    padding: 8px 24px;
+    padding: 8px 28px;
     margin-top: 8px;
     border: 1px solid #000;
     background: #fff;
     cursor: pointer;
     font-family: inherit;
+    font-size: 13px;
+    letter-spacing: 0.5px;
+    transition: background 0.15s, color 0.15s;
 }
 
 .services-section button:hover:not(:disabled) {
@@ -278,8 +360,8 @@ body {
 }
 
 .services-section button:disabled {
-    color: #999;
-    border-color: #999;
+    color: #bbb;
+    border-color: #ccc;
     cursor: default;
 }
 
@@ -290,7 +372,7 @@ body {
     left: 0;
     width: 100vw;
     height: 100vh;
-    background: rgba(255, 255, 255, 0.97);
+    background: rgba(250, 250, 250, 0.98);
     z-index: 90;
     display: flex;
     align-items: center;
@@ -300,7 +382,9 @@ body {
 .map-container {
     width: 90%;
     height: 85%;
-    border: 2px solid #000;
+    border: 1px solid #000;
+    background: #fff;
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.06);
 }
 
 #map-canvas {
@@ -320,7 +404,7 @@ body {
     left: 0;
     width: 100vw;
     height: 100vh;
-    background: rgba(0, 0, 0, 0.85);
+    background: rgba(0, 0, 0, 0.75);
     z-index: 110;
     display: flex;
     align-items: center;
@@ -328,30 +412,32 @@ body {
 }
 
 .stranded-panel {
-    max-width: 500px;
+    max-width: 480px;
     width: 90%;
-    border: 2px solid #c00;
-    padding: 32px;
+    border: 1px solid #c00;
+    padding: 36px;
     background: #fff;
     color: #000;
     text-align: center;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
 }
 
 .stranded-header h2 {
-    font-size: 28px;
+    font-size: 24px;
     color: #c00;
     letter-spacing: 6px;
-    margin-bottom: 16px;
+    margin-bottom: 14px;
 }
 
 .stranded-header p {
-    margin-bottom: 8px;
-    color: #333;
+    margin-bottom: 6px;
+    color: #444;
+    font-size: 13px;
 }
 
 .stranded-coords {
-    font-size: 12px;
-    color: #666 !important;
+    font-size: 11px;
+    color: #999 !important;
 }
 
 .stranded-content {
@@ -360,14 +446,17 @@ body {
 }
 
 .stranded-content h4 {
-    border-bottom: 1px solid #ccc;
+    font-size: 13px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    border-bottom: 1px solid #ddd;
     padding-bottom: 6px;
     margin-bottom: 12px;
 }
 
 .stranded-content p {
     font-size: 13px;
-    color: #333;
+    color: #555;
     margin-bottom: 8px;
 }
 
@@ -388,6 +477,7 @@ body {
     font-family: inherit;
     font-size: 13px;
     text-align: left;
+    transition: background 0.15s, color 0.15s;
 }
 
 .btn-respawn-ship:hover,
@@ -407,7 +497,7 @@ body {
     left: 0;
     width: 100vw;
     height: 100vh;
-    background: rgba(0, 0, 0, 0.6);
+    background: rgba(0, 0, 0, 0.5);
     z-index: 120;
     display: flex;
     align-items: center;
@@ -415,18 +505,19 @@ body {
 }
 
 .pause-panel {
-    max-width: 320px;
+    max-width: 300px;
     width: 80%;
-    border: 2px solid #000;
-    padding: 32px;
+    border: 1px solid #000;
+    padding: 36px;
     background: #fff;
     text-align: center;
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.1);
 }
 
 .pause-panel h2 {
-    font-size: 24px;
-    letter-spacing: 4px;
-    margin-bottom: 24px;
+    font-size: 22px;
+    letter-spacing: 6px;
+    margin-bottom: 28px;
 }
 
 .pause-btn {
@@ -439,8 +530,10 @@ body {
     color: #000;
     cursor: pointer;
     font-family: inherit;
-    font-size: 14px;
+    font-size: 13px;
     letter-spacing: 1px;
+    text-transform: uppercase;
+    transition: background 0.15s, color 0.15s;
 }
 
 .pause-btn:hover {
@@ -459,9 +552,9 @@ body {
 }
 
 .pause-hint {
-    margin-top: 16px;
+    margin-top: 18px;
     font-size: 11px;
-    color: #999;
+    color: #bbb;
 }
 
 /* ─── Docking minigame overlay ───────── */
@@ -471,7 +564,7 @@ body {
     left: 0;
     width: 100vw;
     height: 100vh;
-    background: #020208;
+    background: #fff;
     z-index: 95;
 }
 

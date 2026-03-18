@@ -465,15 +465,16 @@ function draw(cw, ch) {
     ctx.clearRect(0, 0, cw, ch);
 
     // White background
-    ctx.fillStyle = '#ffffff';
+    ctx.fillStyle = '#fff';
     ctx.fillRect(0, 0, cw, ch);
 
-    // Background stars (grey on white)
-    ctx.fillStyle = '#bbbcce';
-    for (let i = 0; i < 60; i++) {
-        const sx = ((i * 137.5) % cw);
-        const sy = ((i * 211.3) % ch);
-        ctx.fillRect(sx, sy, 1.5, 1.5);
+    // Background dust specks (grey on white, matches main game feel)
+    ctx.fillStyle = '#c0c0c8';
+    for (let i = 0; i < 80; i++) {
+        const sx = ((i * 137.5 + 23) % cw);
+        const sy = ((i * 211.3 + 47) % ch);
+        const sz = 1 + (i % 3) * 0.5;
+        ctx.fillRect(sx, sy, sz, sz);
     }
 
     // Crash flash
@@ -516,7 +517,7 @@ function drawStation(cw, ch) {
 
     // Entrance markers (blinking lights)
     const blink = Math.sin(performance.now() / 300) > 0;
-    ctx.fillStyle = blink ? '#0f0' : '#030';
+    ctx.fillStyle = blink ? '#0a0' : '#060';
     ctx.fillRect(stX - 2, entranceTop - 4, 6, 6);
     ctx.fillRect(stX - 2, entranceTop + ENTRANCE_H - 2, 6, 6);
 
@@ -682,34 +683,34 @@ function drawHUD(cw, ch) {
 
     if (phase === 'requesting') {
         ctx.font = '18px monospace';
-        ctx.fillStyle = '#fa0';
+        ctx.fillStyle = '#996600';
         ctx.fillText('REQUESTING DOCKING PERMISSION...', cw / 2, 40);
         const dots = '.'.repeat(Math.floor(phaseTimer * 2) % 4);
         ctx.font = '14px monospace';
-        ctx.fillStyle = '#886';
+        ctx.fillStyle = '#888';
         ctx.fillText(`Contacting ${stationName} ATC${dots}`, cw / 2, 65);
     }
 
     if (phase === 'granted') {
         ctx.font = '18px monospace';
-        ctx.fillStyle = '#0f0';
+        ctx.fillStyle = '#060';
         ctx.fillText('PERMISSION GRANTED', cw / 2, 40);
         ctx.font = '14px monospace';
-        ctx.fillStyle = '#8c8';
+        ctx.fillStyle = '#555';
         const side = assignedBay < floorBayCount ? 'FLOOR' : 'CEILING';
-        ctx.fillText(`Bay ${assignedBay + 1} (${side}) - Navigate and hold position`, cw / 2, 65);
+        ctx.fillText(`Bay ${assignedBay + 1} (${side}) — Navigate and hold position`, cw / 2, 65);
     }
 
     if (phase === 'flying') {
         ctx.font = '13px monospace';
-        ctx.fillStyle = '#8af';
+        ctx.fillStyle = '#555';
         const side = assignedBay < floorBayCount ? 'Floor' : 'Ceiling';
-        ctx.fillText(`Bay ${assignedBay + 1} (${side}) | W/S - Thrust/Brake | A/D - Rotate`, cw / 2, 30);
+        ctx.fillText(`Bay ${assignedBay + 1} (${side})  |  W/S Thrust/Brake  |  A/D Rotate`, cw / 2, 30);
 
         // Speed
         const spd = Math.sqrt(ship.vx * ship.vx + ship.vy * ship.vy);
         ctx.font = '12px monospace';
-        ctx.fillStyle = spd < 15 ? '#0f0' : (spd > CRASH_SPEED_THRESHOLD ? '#f44' : '#fa0');
+        ctx.fillStyle = spd < 15 ? '#060' : (spd > CRASH_SPEED_THRESHOLD ? '#c00' : '#960');
         ctx.fillText(`SPD: ${Math.round(spd)}`, cw / 2, ch - 20);
     }
 
@@ -717,7 +718,7 @@ function drawHUD(cw, ch) {
     if (phase === 'flying' || phase === 'destroyed') {
         ctx.textAlign = 'right';
         ctx.font = '13px monospace';
-        const hullColor = hullDisplay > 60 ? '#0f0' : hullDisplay > 30 ? '#fa0' : '#f44';
+        const hullColor = hullDisplay > 60 ? '#060' : hullDisplay > 30 ? '#960' : '#c00';
         ctx.fillStyle = hullColor;
         ctx.fillText(`HULL: ${Math.round(hullDisplay)}%`, cw - 15, 30);
 
@@ -726,16 +727,16 @@ function drawHUD(cw, ch) {
         const barH = 8;
         const barX = cw - 15 - barW;
         const barY = 36;
-        ctx.fillStyle = '#222';
+        ctx.fillStyle = '#eee';
         ctx.fillRect(barX, barY, barW, barH);
         ctx.fillStyle = hullColor;
         ctx.fillRect(barX, barY, barW * hullDisplay / 100, barH);
-        ctx.strokeStyle = '#445';
+        ctx.strokeStyle = '#999';
         ctx.strokeRect(barX, barY, barW, barH);
 
         if (crashCount > 0) {
             ctx.font = '11px monospace';
-            ctx.fillStyle = '#f88';
+            ctx.fillStyle = '#c44';
             ctx.fillText(`Impacts: ${crashCount}`, cw - 15, barY + 22);
         }
     }
@@ -743,17 +744,17 @@ function drawHUD(cw, ch) {
     if (phase === 'docked') {
         ctx.textAlign = 'center';
         ctx.font = '22px monospace';
-        ctx.fillStyle = '#0f0';
+        ctx.fillStyle = '#060';
         ctx.fillText('DOCKED SUCCESSFULLY', cw / 2, 50);
     }
 
     if (phase === 'destroyed') {
         ctx.textAlign = 'center';
         ctx.font = '26px monospace';
-        ctx.fillStyle = '#f44';
+        ctx.fillStyle = '#c00';
         ctx.fillText('SHIP DESTROYED', cw / 2, ch / 2 - 10);
         ctx.font = '14px monospace';
-        ctx.fillStyle = '#a66';
+        ctx.fillStyle = '#866';
         ctx.fillText('Hull integrity lost from collision damage', cw / 2, ch / 2 + 20);
     }
 
@@ -762,7 +763,7 @@ function drawHUD(cw, ch) {
     // ESC to abort
     if (phase === 'flying') {
         ctx.font = '11px monospace';
-        ctx.fillStyle = '#556';
-        ctx.fillText('ESC - Abort docking', 10, ch - 10);
+        ctx.fillStyle = '#999';
+        ctx.fillText('ESC — Abort docking', 10, ch - 10);
     }
 }

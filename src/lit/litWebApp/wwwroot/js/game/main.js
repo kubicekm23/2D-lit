@@ -7,7 +7,7 @@ import { initHud } from './renderer/hudRenderer.js';
 import { startGameLoop, setOverlayActive } from './engine/gameLoop.js';
 import { worldState, loadWorld } from './world/worldState.js';
 import { playerState, loadPlayer, getSpeed } from './world/playerState.js';
-import { setWorldBounds, AUTOSAVE_INTERVAL, ATC_RANGE, LANDING_RANGE, LANDING_MAX_SPEED } from './utils/constants.js';
+import { setWorldBounds, AUTOSAVE_INTERVAL, ATC_RANGE } from './utils/constants.js';
 import { distance } from './utils/math.js';
 import * as api from './api/client.js';
 import { initStationUI, openStation, closeStation, isOpen as isStationOpen } from './ui/stationUI.js';
@@ -172,11 +172,14 @@ window.addEventListener('beforeunload', () => {
 // Start
 init().catch(e => {
     console.error('Game init failed:', e);
-    document.body.innerHTML = `<div style="padding:40px;font-family:monospace;">
-        <h2>Game failed to load</h2>
-        <p>${e.message || e}</p>
-        <p>Check the browser console for details.</p>
-        <button onclick="location.reload()" style="padding:8px 16px;margin-top:12px;cursor:pointer;">Retry</button>
-        <button onclick="location.href='/Auth/Logout'" style="padding:8px 16px;margin-top:12px;cursor:pointer;">Logout</button>
+    const msg = String(e.message || e).replace(/[<>&"]/g, c => ({ '<': '&lt;', '>': '&gt;', '&': '&amp;', '"': '&quot;' }[c]));
+    document.body.innerHTML = `<div style="display:flex;align-items:center;justify-content:center;height:100vh;font-family:'Courier New',monospace;">
+        <div style="text-align:center;max-width:400px;padding:40px;border:1px solid #ccc;">
+            <h2 style="letter-spacing:3px;margin-bottom:16px;">LOAD FAILED</h2>
+            <p style="color:#888;font-size:13px;margin-bottom:6px;">${msg}</p>
+            <p style="color:#aaa;font-size:11px;margin-bottom:20px;">Check the browser console for details.</p>
+            <button onclick="location.reload()" style="padding:10px 28px;border:1px solid #000;background:#fff;font-family:inherit;font-size:13px;cursor:pointer;letter-spacing:1px;margin:4px;">RETRY</button>
+            <button onclick="location.href='/Auth/Logout'" style="padding:10px 28px;border:1px solid #c00;color:#c00;background:#fff;font-family:inherit;font-size:13px;cursor:pointer;letter-spacing:1px;margin:4px;">LOGOUT</button>
+        </div>
     </div>`;
 });
