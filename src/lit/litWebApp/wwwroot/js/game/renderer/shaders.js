@@ -110,6 +110,7 @@ in float a_seed;
 uniform vec2 u_cameraPos;
 uniform vec2 u_resolution;
 uniform float u_zoom;
+uniform float u_dpr;
 
 out float v_radius;
 out float v_seed;
@@ -117,7 +118,7 @@ out float v_seed;
 void main() {
     vec2 screen = (a_position - u_cameraPos) * u_zoom / (u_resolution * 0.5);
     gl_Position = vec4(screen, 0.0, 1.0);
-    gl_PointSize = a_radius * 2.0 * u_zoom;
+    gl_PointSize = a_radius * 2.0 * u_zoom * u_dpr;
     v_radius = a_radius;
     v_seed = a_seed;
 }

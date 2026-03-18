@@ -12,9 +12,11 @@ export function initPlanets() {
     loc.cameraPos = gl.getUniformLocation(program, 'u_cameraPos');
     loc.resolution = gl.getUniformLocation(program, 'u_resolution');
     loc.zoom = gl.getUniformLocation(program, 'u_zoom');
+    loc.dpr = gl.getUniformLocation(program, 'u_dpr');
 
     vao = gl.createVertexArray();
     gl.bindVertexArray(vao);
+    gl.bindVertexArray(null);
 }
 
 export function renderPlanets(camera, worldState) {
@@ -27,6 +29,7 @@ export function renderPlanets(camera, worldState) {
     gl.uniform2f(loc.cameraPos, camera.x, camera.y);
     gl.uniform2f(loc.resolution, camera.width, camera.height);
     gl.uniform1f(loc.zoom, camera.zoom);
+    gl.uniform1f(loc.dpr, window.devicePixelRatio || 1);
 
     // Dynamic buffer since world state loads later
     const data = new Float32Array(worldState.planets.length * 4);

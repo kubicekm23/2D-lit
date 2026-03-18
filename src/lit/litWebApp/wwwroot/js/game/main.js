@@ -54,9 +54,15 @@ async function init() {
     // Auto-save timer
     let saveTimer = 0;
 
-    // If player starts docked, open station UI
+    // If player starts docked, open station UI (await so we can recover on failure)
     if (playerState.isDocked && playerState.dockedStationId) {
-        openStation(playerState.dockedStationId);
+        await openStation(playerState.dockedStationId);
+        if (!isStationOpen()) {
+            // Station UI failed to load — undock so the player isn't stuck on a blank screen
+            console.warn('Station UI failed to open on load, undocking player');
+            playerState.isDocked = false;
+            playerState.dockedStationId = null;
+        }
     }
 
     // Start game loop
