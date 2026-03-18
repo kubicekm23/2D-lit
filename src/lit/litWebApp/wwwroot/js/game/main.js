@@ -14,6 +14,7 @@ import { initStationUI, openStation, closeStation, isOpen as isStationOpen } fro
 import { initMap, openMap, closeMap, isMapOpen } from './ui/mapUI.js';
 import { initStrandedUI, openStranded, isStrandedOpen } from './ui/strandedUI.js';
 import { initDockingMinigame, openDockingMinigame, closeDockingMinigame, isDockingOpen } from './ui/dockingMinigame.js';
+import { initPauseMenu, openPauseMenu, closePauseMenu, isPauseOpen } from './ui/pauseMenu.js';
 import { getNearestStation } from './renderer/hudRenderer.js';
 
 async function init() {
@@ -44,6 +45,7 @@ async function init() {
     initMap();
     initStrandedUI();
     initDockingMinigame(handleDockSuccess, handleShipDestroyed);
+    initPauseMenu();
 
     // Auto-save timer
     let saveTimer = 0;
@@ -76,13 +78,18 @@ async function init() {
             }
         }
 
-        // Escape to close overlays / abort docking
+        // Escape - close overlays, abort docking, or open pause menu
         if (wasPressed('Escape')) {
-            if (isDockingOpen()) {
+            if (isPauseOpen()) {
+                closePauseMenu();
+            } else if (isDockingOpen()) {
                 closeDockingMinigame();
                 setOverlayActive(false);
             } else if (isMapOpen()) {
                 closeMap();
+            } else if (!isStationOpen() && !isStrandedOpen()) {
+                autoSave();
+                openPauseMenu();
             }
         }
 
