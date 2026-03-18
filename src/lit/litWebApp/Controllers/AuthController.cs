@@ -18,6 +18,12 @@ public class AuthController : Controller
     }
 
     [HttpGet]
+    public IActionResult About()
+    {
+        return View();
+    }
+
+    [HttpGet]
     public IActionResult Login()
     {
         if (User.Identity?.IsAuthenticated == true)
