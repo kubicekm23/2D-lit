@@ -21,7 +21,7 @@ services:
       context: ./litWebApp
       dockerfile: Dockerfile
     ports:
-      - "8080:8090"
+      - "8090:8090"
     depends_on:
       db:
         condition: service_healthy
