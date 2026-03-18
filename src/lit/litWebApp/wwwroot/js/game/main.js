@@ -4,7 +4,7 @@ import { initBackground } from './renderer/backgroundRenderer.js';
 import { initShip } from './renderer/shipRenderer.js';
 import { initStations } from './renderer/stationRenderer.js';
 import { initHud } from './renderer/hudRenderer.js';
-import { startGameLoop } from './engine/gameLoop.js';
+import { startGameLoop, setOverlayActive } from './engine/gameLoop.js';
 import { worldState, loadWorld } from './world/worldState.js';
 import { playerState, loadPlayer, getSpeed } from './world/playerState.js';
 import { setWorldBounds, AUTOSAVE_INTERVAL, ATC_RANGE, LANDING_RANGE, LANDING_MAX_SPEED } from './utils/constants.js';
@@ -70,7 +70,7 @@ async function init() {
             if (nearest) {
                 const dist = distance(playerState.ship.x, playerState.ship.y, nearest.x, nearest.y);
                 if (dist < ATC_RANGE) {
-                    // Open docking minigame with permission request flow
+                    setOverlayActive(true);
                     openDockingMinigame(nearest.id, nearest.name, nearest.hangarLimit);
                 }
             }
@@ -80,6 +80,7 @@ async function init() {
         if (wasPressed('Escape')) {
             if (isDockingOpen()) {
                 closeDockingMinigame();
+                setOverlayActive(false);
             } else if (isMapOpen()) {
                 closeMap();
             }
@@ -107,13 +108,14 @@ async function init() {
 }
 
 function handleShipDestroyed() {
-    // Ship was destroyed during docking - save hull=0, then open stranded UI
+    setOverlayActive(false);
     playerState.ship.hull = 0;
     autoSave();
     openStranded();
 }
 
 async function handleDockSuccess(stationId) {
+    setOverlayActive(false);
     try {
         await api.dock(stationId);
         await autoSave();

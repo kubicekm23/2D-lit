@@ -18,7 +18,7 @@ void main() {
     vec2 parallax = a_position - u_cameraPos * a_depth;
     vec2 screen = parallax * u_zoom / (u_resolution * 0.5);
     gl_Position = vec4(screen, 0.0, 1.0);
-    gl_PointSize = mix(1.5, 4.0, a_depth);
+    gl_PointSize = mix(1.5, 5.0, a_depth);
     v_brightness = a_brightness;
     v_depth = a_depth;
 }

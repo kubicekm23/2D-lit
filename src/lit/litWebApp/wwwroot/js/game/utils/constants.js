@@ -13,7 +13,7 @@ export function setWorldBounds(minX, maxX, minY, maxY) {
 
 // Rendering
 export const STAR_COUNT = 800;
-export const DUST_COUNT = 200;
+export const DUST_COUNT = 600;
 
 // Speed blur thresholds (fraction of max speed)
 export const BLUR_START = 0.3;

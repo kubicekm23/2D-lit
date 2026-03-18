@@ -8,12 +8,15 @@ import { renderStations } from '../renderer/stationRenderer.js';
 import { updateHud } from '../renderer/hudRenderer.js';
 import { playerState, getSpeedFraction } from '../world/playerState.js';
 import { worldState } from '../world/worldState.js';
-import { isDockingOpen } from '../ui/dockingMinigame.js';
 
 let lastTime = 0;
 let canvas = null;
 let running = false;
 let onFrameCallback = null;
+
+// Flag set by main.js when docking minigame is active
+let _overlayActive = false;
+export function setOverlayActive(v) { _overlayActive = v; }
 
 export function startGameLoop(canvasEl, onFrame) {
     canvas = canvasEl;
@@ -35,8 +38,8 @@ function loop(timestamp) {
 
     resizeCanvas(canvas);
 
-    // Don't update physics when docked or in docking minigame
-    if (!playerState.isDocked && !isDockingOpen()) {
+    // Don't update physics when docked or in overlay
+    if (!playerState.isDocked && !_overlayActive) {
         updatePhysics(dt);
     }
 
@@ -49,11 +52,11 @@ function loop(timestamp) {
     renderBackground(camera, playerState, getSpeedFraction());
     renderStations(camera, worldState, playerState);
 
-    if (!playerState.isDocked && !isDockingOpen()) {
+    if (!playerState.isDocked && !_overlayActive) {
         renderShip(camera, playerState);
     }
 
-    if (!isDockingOpen()) {
+    if (!_overlayActive) {
         updateHud(playerState, worldState);
     }
 

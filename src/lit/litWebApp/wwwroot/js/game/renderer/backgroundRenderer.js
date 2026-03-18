@@ -33,7 +33,7 @@ export function initBackground() {
         data[idx + 0] = (WORLD_MIN_X - expandX) + Math.random() * (WORLD_MAX_X - WORLD_MIN_X + expandX * 2); // x
         data[idx + 1] = (WORLD_MIN_Y - expandY) + Math.random() * (WORLD_MAX_Y - WORLD_MIN_Y + expandY * 2); // y
         data[idx + 2] = isDust ? 0.7 + Math.random() * 0.3 : 0.3 + Math.random() * 0.7; // depth
-        data[idx + 3] = isDust ? 0.05 + Math.random() * 0.15 : 0.1 + Math.random() * 0.5; // brightness
+        data[idx + 3] = isDust ? 0.25 + Math.random() * 0.35 : 0.15 + Math.random() * 0.5; // brightness
     }
 
     vertexCount = totalCount;
