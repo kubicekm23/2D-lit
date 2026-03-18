@@ -35,7 +35,43 @@ export function updateHud(playerState, worldState) {
     }
 
     const speed = Math.sqrt(ship.vx * ship.vx + ship.vy * ship.vy);
-...
+    const maxSpeed = ship.type.maxSpeed;
+    const fuelPct = ship.type.maxFuel > 0 ? (ship.fuel / ship.type.maxFuel * 100) : 0;
+
+    if (elements.speed) {
+        elements.speed.textContent = `SPD: ${Math.round(speed)} / ${Math.round(maxSpeed)}`;
+    }
+
+    if (elements.fuel) {
+        elements.fuel.textContent = `FUEL: ${Math.round(fuelPct)}%`;
+        elements.fuel.style.color = fuelPct < 20 ? '#c00' : '#000';
+    }
+
+    if (elements.hull) {
+        const hull = Math.round(ship.hull);
+        elements.hull.textContent = `HULL: ${hull}%`;
+        elements.hull.style.color = hull < 30 ? '#c00' : hull < 60 ? '#960' : '#000';
+    }
+
+    if (elements.credits) {
+        elements.credits.textContent = `CR: ${playerState.credits.toLocaleString()}`;
+    }
+
+    if (elements.coords) {
+        elements.coords.textContent = `X:${Math.round(ship.x)} Y:${Math.round(ship.y)}`;
+    }
+
+    // Find nearest station
+    let minDist = Infinity;
+    nearestStation = null;
+    for (const st of worldState.stations) {
+        const d = distance(ship.x, ship.y, st.x, st.y);
+        if (d < minDist) {
+            minDist = d;
+            nearestStation = st;
+        }
+    }
+
     if (elements.stationInfo) {
         if (nearestStation && minDist < ATC_RANGE) {
             elements.stationInfo.textContent = `${nearestStation.name} — ${Math.round(minDist)}Ls — [F] Request Docking`;
