@@ -61,7 +61,10 @@ const DOCK_HOLD_TIME = 1.5;
 export function initDockingMinigame(onSuccess, onDestroy) {
     overlay = document.getElementById('docking-overlay');
     canvas = document.getElementById('docking-canvas');
-    if (canvas) ctx = canvas.getContext('2d');
+    if (canvas) {
+        ctx = canvas.getContext('2d');
+        new ResizeObserver(() => { canvasDirty = true; }).observe(canvas);
+    }
     onDockSuccess = onSuccess;
     onShipDestroyed = onDestroy;
 }
@@ -82,7 +85,8 @@ export function openDockingMinigame(sid, sname, hangarLim) {
     assignedBay = Math.floor(Math.random() * totalBays);
 
     // Reset ship
-    resizeCanvas();
+    resizeCanvas(); // always resize on open since overlay was hidden
+    canvasDirty = false;
     stX = canvas.clientWidth / 2 - STATION_W / 2;
     stY = canvas.clientHeight / 2 - STATION_H / 2;
 
@@ -127,6 +131,7 @@ function resizeCanvas() {
 }
 
 let lastTime = 0;
+let canvasDirty = false;
 
 function loop(timestamp) {
     if (!active) return;
@@ -134,7 +139,10 @@ function loop(timestamp) {
     const dt = Math.min((timestamp - lastTime) / 1000, 0.05);
     lastTime = timestamp;
 
-    resizeCanvas();
+    if (canvasDirty) {
+        resizeCanvas();
+        canvasDirty = false;
+    }
     const cw = canvas.clientWidth;
     const ch = canvas.clientHeight;
 
@@ -262,6 +270,7 @@ function checkAICollision() {
         const dy = ship.y - ai.y;
         const dist = Math.sqrt(dx * dx + dy * dy);
         if (dist < collisionDist) {
+            if (dist === 0) continue; // avoid division by zero if ships overlap exactly
             // Push apart
             const nx = dx / dist;
             const ny = dy / dist;

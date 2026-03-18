@@ -117,7 +117,7 @@ public class GameApiController : ControllerBase
             .FirstOrDefaultAsync(s => s.UserId == UserId && s.IsActive);
         if (ship == null) return NotFound();
 
-        // If docked, we don't allow changing position/velocity via this API
+        // If docked, we don't allow changing position/velocity/fuel/hull via this API
         if (ship.HangarSpot == null)
         {
             ship.PositionX = dto.X;
@@ -125,10 +125,9 @@ public class GameApiController : ControllerBase
             ship.Rotation = dto.Rotation;
             ship.VelocityX = dto.Vx;
             ship.VelocityY = dto.Vy;
+            ship.MnozstviPaliva = dto.Fuel;
+            ship.Hull = dto.Hull;
         }
-
-        ship.MnozstviPaliva = dto.Fuel;
-        ship.Hull = dto.Hull;
 
         await _db.SaveChangesAsync();
         return Ok();
