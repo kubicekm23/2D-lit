@@ -3,6 +3,7 @@ import { initInput, wasPressed, clearFrameInput } from './engine/input.js';
 import { initBackground } from './renderer/backgroundRenderer.js';
 import { initShip } from './renderer/shipRenderer.js';
 import { initStations } from './renderer/stationRenderer.js';
+import { initPlanets } from './renderer/planetRenderer.js';
 import { initHud } from './renderer/hudRenderer.js';
 import { startGameLoop, setOverlayActive } from './engine/gameLoop.js';
 import { worldState, loadWorld } from './world/worldState.js';
@@ -39,6 +40,7 @@ async function init() {
     initBackground();
     initShip();
     initStations();
+    initPlanets();
     initInput();
     initHud();
     initStationUI();

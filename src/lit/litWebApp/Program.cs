@@ -38,8 +38,13 @@ public class Program
             {
                 await db.Database.ExecuteSqlRawAsync(
                     "ALTER TABLE \"Ships\" ADD COLUMN IF NOT EXISTS \"Hull\" real NOT NULL DEFAULT 100");
+                
+                await db.Database.ExecuteSqlRawAsync(
+                    "ALTER TABLE \"VisitedStations\" ADD COLUMN IF NOT EXISTS \"CachedGoodsJson\" text");
+                await db.Database.ExecuteSqlRawAsync(
+                    "ALTER TABLE \"VisitedStations\" ADD COLUMN IF NOT EXISTS \"CachedShipsJson\" text");
             }
-            catch { /* column already exists or DB just created */ }
+            catch { /* columns already exist or DB just created */ }
 
             await SeedDataService.SeedAsync(db);
             await WorldGenerationService.GenerateWorldAsync(db);

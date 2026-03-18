@@ -3,6 +3,7 @@ namespace litWebApp.Models.DTOs;
 public class WorldDto
 {
     public List<StationDto> Stations { get; set; } = new();
+    public List<PlanetDto> Planets { get; set; } = new();
     public float MinX { get; set; }
     public float MaxX { get; set; }
     public float MinY { get; set; }
@@ -16,6 +17,15 @@ public class StationDto
     public float X { get; set; }
     public float Y { get; set; }
     public int HangarLimit { get; set; }
+}
+
+public class PlanetDto
+{
+    public int Id { get; set; }
+    public string Name { get; set; } = "";
+    public float X { get; set; }
+    public float Y { get; set; }
+    public string CargoName { get; set; } = "";
 }
 
 public class PlayerDto
@@ -123,4 +133,5 @@ public class MapStationDto
     public float Y { get; set; }
     public DateTime VisitedAt { get; set; }
     public List<StationCargoDto> CachedGoods { get; set; } = new();
+    public List<ShipTypeDto> CachedShips { get; set; } = new();
 }

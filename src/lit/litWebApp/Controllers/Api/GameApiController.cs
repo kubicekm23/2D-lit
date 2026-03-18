@@ -1,4 +1,5 @@
 using System.Security.Claims;
+using System.Text.Json;
 using litWebApp.Models;
 using litWebApp.Models.DbModels;
 using litWebApp.Models.DTOs;
@@ -15,7 +16,7 @@ namespace litWebApp.Controllers.Api;
 public class GameApiController : ControllerBase
 {
     private readonly AppDbContext _db;
-    private const float StationInteractionRange = 850f;
+    private const float StationInteractionRange = 800f;
     private const decimal FuelPricePerUnit = 5m;
 
     public GameApiController(AppDbContext db)
@@ -39,9 +40,22 @@ public class GameApiController : ControllerBase
             })
             .ToListAsync();
 
+        var planets = await _db.Planets
+            .Include(p => p.CargoType)
+            .Select(p => new PlanetDto
+            {
+                Id = p.Id,
+                Name = p.Name,
+                X = p.CoordinateX,
+                Y = p.CoordinateY,
+                CargoName = p.CargoType.Name
+            })
+            .ToListAsync();
+
         return Ok(new WorldDto
         {
             Stations = stations,
+            Planets = planets,
             MinX = WorldGenerationService.WorldMinX,
             MaxX = WorldGenerationService.WorldMaxX,
             MinY = WorldGenerationService.WorldMinY,
@@ -153,21 +167,36 @@ public class GameApiController : ControllerBase
         if (dist > StationInteractionRange)
             return BadRequest("Station out of range.");
 
-        // Record visit
+        // Record visit and snapshot current data
         var visit = await _db.VisitedStations
             .FirstOrDefaultAsync(v => v.UserId == UserId && v.StationId == id);
+
+        var currentGoods = station.CargoTypeValues.Select(ctv => new StationCargoDto
+        {
+            CargoTypeId = ctv.CargoTypeId,
+            Name = ctv.CargoType.Name,
+            Price = ctv.Value
+        }).ToList();
+
+        var currentShips = station.ShipStocks.Select(ss => MapShipType(ss.ShipType)).ToList();
+
         if (visit == null)
         {
-            _db.VisitedStations.Add(new VisitedStationModel
+            visit = new VisitedStationModel
             {
                 UserId = UserId,
                 StationId = id,
-                VisitedAt = DateTime.UtcNow
-            });
+                VisitedAt = DateTime.UtcNow,
+                CachedGoodsJson = JsonSerializer.Serialize(currentGoods),
+                CachedShipsJson = JsonSerializer.Serialize(currentShips)
+            };
+            _db.VisitedStations.Add(visit);
         }
         else
         {
             visit.VisitedAt = DateTime.UtcNow;
+            visit.CachedGoodsJson = JsonSerializer.Serialize(currentGoods);
+            visit.CachedShipsJson = JsonSerializer.Serialize(currentShips);
         }
         await _db.SaveChangesAsync();
 
@@ -175,13 +204,8 @@ public class GameApiController : ControllerBase
         {
             Id = station.Id,
             Name = station.Name,
-            Goods = station.CargoTypeValues.Select(ctv => new StationCargoDto
-            {
-                CargoTypeId = ctv.CargoTypeId,
-                Name = ctv.CargoType.Name,
-                Price = ctv.Value
-            }).ToList(),
-            ShipsForSale = station.ShipStocks.Select(ss => MapShipType(ss.ShipType)).ToList()
+            Goods = currentGoods,
+            ShipsForSale = currentShips
         });
     }
 
@@ -527,8 +551,6 @@ public class GameApiController : ControllerBase
         var visits = await _db.VisitedStations
             .Where(v => v.UserId == UserId)
             .Include(v => v.Station)
-                .ThenInclude(s => s.CargoTypeValues)
-                .ThenInclude(ctv => ctv.CargoType)
             .ToListAsync();
 
         var result = visits.Select(v => new MapStationDto
@@ -538,12 +560,12 @@ public class GameApiController : ControllerBase
             X = v.Station.CoordinateX,
             Y = v.Station.CoordinateY,
             VisitedAt = v.VisitedAt,
-            CachedGoods = v.Station.CargoTypeValues.Select(ctv => new StationCargoDto
-            {
-                CargoTypeId = ctv.CargoTypeId,
-                Name = ctv.CargoType.Name,
-                Price = ctv.Value
-            }).ToList()
+            CachedGoods = string.IsNullOrEmpty(v.CachedGoodsJson)
+                ? new List<StationCargoDto>()
+                : JsonSerializer.Deserialize<List<StationCargoDto>>(v.CachedGoodsJson) ?? new(),
+            CachedShips = string.IsNullOrEmpty(v.CachedShipsJson)
+                ? new List<ShipTypeDto>()
+                : JsonSerializer.Deserialize<List<ShipTypeDto>>(v.CachedShipsJson) ?? new()
         }).ToList();
 
         return Ok(result);

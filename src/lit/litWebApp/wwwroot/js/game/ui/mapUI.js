@@ -2,7 +2,7 @@ import * as api from '../api/client.js';
 import { worldState } from '../world/worldState.js';
 import { playerState } from '../world/playerState.js';
 
-let overlay, canvas, ctx;
+let overlay, canvas, ctx, detailsPanel;
 let isOpen = false;
 let mapData = []; // visited stations from server
 let panX = 0, panY = 0, zoom = 1;
@@ -11,6 +11,7 @@ let dragging = false, lastMouse = { x: 0, y: 0 };
 export function initMap() {
     overlay = document.getElementById('map-overlay');
     canvas = document.getElementById('map-canvas');
+    detailsPanel = document.getElementById('map-details');
     if (canvas) ctx = canvas.getContext('2d');
 }
 
@@ -43,6 +44,7 @@ export async function openMap() {
 export function closeMap() {
     isOpen = false;
     overlay.style.display = 'none';
+    if (detailsPanel) detailsPanel.style.display = 'none';
     removeMapListeners();
 }
 
@@ -56,6 +58,23 @@ function resizeMap() {
     canvas.height = rect.height;
 }
 
+function worldToMap(wx, wy) {
+    const w = canvas.width;
+    const h = canvas.height;
+    const cx = w / 2;
+    const cy = h / 2;
+
+    const worldW = worldState.maxX - worldState.minX;
+    const worldH = worldState.maxY - worldState.minY;
+    const baseScale = Math.min(w / worldW, h / worldH) * 0.85;
+    const scale = baseScale * zoom;
+
+    return [
+        cx + (wx - playerState.ship.x + panX) * scale,
+        cy - (wy - playerState.ship.y + panY) * scale,
+    ];
+}
+
 function drawMap() {
     if (!ctx || !isOpen) return;
 
@@ -64,22 +83,6 @@ function drawMap() {
     ctx.clearRect(0, 0, w, h);
     ctx.fillStyle = '#fff';
     ctx.fillRect(0, 0, w, h);
-
-    const cx = w / 2;
-    const cy = h / 2;
-
-    // Scale: map world bounds to canvas
-    const worldW = worldState.maxX - worldState.minX;
-    const worldH = worldState.maxY - worldState.minY;
-    const baseScale = Math.min(w / worldW, h / worldH) * 0.85;
-    const scale = baseScale * zoom;
-
-    function worldToMap(wx, wy) {
-        return [
-            cx + (wx - playerState.ship.x + panX) * scale,
-            cy - (wy - playerState.ship.y + panY) * scale,
-        ];
-    }
 
     // World boundary
     const [bx0, by0] = worldToMap(worldState.minX, worldState.maxY);
@@ -121,7 +124,71 @@ function drawMap() {
     // Legend
     ctx.font = '12px monospace';
     ctx.fillStyle = '#000';
-    ctx.fillText('M - Close Map | Scroll to zoom | Drag to pan', 10, h - 10);
+    ctx.fillText('M - Close Map | Scroll to zoom | Drag to pan | Click station for info', 10, h - 10);
+}
+
+function onClick(e) {
+    if (dragging && (Math.abs(e.clientX - lastMouse.x) > 5 || Math.abs(e.clientY - lastMouse.y) > 5)) {
+        return; // Don't click when dragging
+    }
+
+    const rect = canvas.getBoundingClientRect();
+    const mx = e.clientX - rect.left;
+    const my = e.clientY - rect.top;
+
+    const visitedIds = new Set(mapData.map(v => v.stationId));
+    let found = null;
+
+    for (const st of worldState.stations) {
+        if (!visitedIds.has(st.id)) continue;
+        const [sx, sy] = worldToMap(st.x, st.y);
+        const dist = Math.sqrt((mx - sx) ** 2 + (my - sy) ** 2);
+        if (dist < 15) {
+            found = st;
+            break;
+        }
+    }
+
+    if (found) {
+        showStationDetails(found);
+    } else {
+        if (detailsPanel) detailsPanel.style.display = 'none';
+    }
+}
+
+function showStationDetails(st) {
+    const data = playerState.visitedStations.get(st.id);
+    if (!data || !detailsPanel) return;
+
+    const dateStr = new Date(data.visitedAt).toLocaleString();
+
+    detailsPanel.innerHTML = `
+        <h3>${st.name}</h3>
+        <p>Last visited: ${dateStr}</p>
+        
+        <div class="map-details-section">
+            <h4>Market Data (Cached)</h4>
+            ${data.cachedGoods.length === 0 ? '<p>No data</p>' : `
+                <ul>
+                    ${data.cachedGoods.map(g => `
+                        <li><span>${g.name}</span> <span>${g.price} CR</span></li>
+                    `).join('')}
+                </ul>
+            `}
+        </div>
+
+        <div class="map-details-section">
+            <h4>Shipyard Data (Cached)</h4>
+            ${data.cachedShips.length === 0 ? '<p>No data</p>' : `
+                <ul>
+                    ${data.cachedShips.map(s => `
+                        <li><span>${s.name}</span> <span>${s.price.toLocaleString()} CR</span></li>
+                    `).join('')}
+                </ul>
+            `}
+        </div>
+    `;
+    detailsPanel.style.display = 'block';
 }
 
 function onWheel(e) {
@@ -153,6 +220,7 @@ function onMouseUp() {
 function addMapListeners() {
     canvas.addEventListener('wheel', onWheel, { passive: false });
     canvas.addEventListener('mousedown', onMouseDown);
+    canvas.addEventListener('click', onClick);
     window.addEventListener('mousemove', onMouseMove);
     window.addEventListener('mouseup', onMouseUp);
 }
@@ -160,6 +228,7 @@ function addMapListeners() {
 function removeMapListeners() {
     canvas.removeEventListener('wheel', onWheel);
     canvas.removeEventListener('mousedown', onMouseDown);
+    canvas.removeEventListener('click', onClick);
     window.removeEventListener('mousemove', onMouseMove);
     window.removeEventListener('mouseup', onMouseUp);
 }

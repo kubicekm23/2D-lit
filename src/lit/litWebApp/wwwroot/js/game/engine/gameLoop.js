@@ -5,6 +5,7 @@ import { clearFrameInput } from './input.js';
 import { renderBackground } from '../renderer/backgroundRenderer.js';
 import { renderShip } from '../renderer/shipRenderer.js';
 import { renderStations } from '../renderer/stationRenderer.js';
+import { renderPlanets } from '../renderer/planetRenderer.js';
 import { updateHud } from '../renderer/hudRenderer.js';
 import { playerState, getSpeedFraction } from '../world/playerState.js';
 import { worldState } from '../world/worldState.js';
@@ -50,6 +51,7 @@ function loop(timestamp) {
     gl.clear(gl.COLOR_BUFFER_BIT);
 
     renderBackground(camera, playerState, getSpeedFraction());
+    renderPlanets(camera, worldState);
     renderStations(camera, worldState, playerState);
 
     if (!playerState.isDocked && !_overlayActive) {

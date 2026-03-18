@@ -98,6 +98,66 @@ void main() {
 }
 `;
 
+// ─── Planet renderer ─────────────────────────────────────
+export const planetVertSrc = `#version 300 es
+precision highp float;
+
+in vec2 a_position;
+in float a_radius;
+in float a_seed;
+
+uniform vec2 u_cameraPos;
+uniform vec2 u_resolution;
+uniform float u_zoom;
+
+out float v_radius;
+out float v_seed;
+
+void main() {
+    vec2 screen = (a_position - u_cameraPos) * u_zoom / (u_resolution * 0.5);
+    gl_Position = vec4(screen, 0.0, 1.0);
+    gl_PointSize = a_radius * 2.0 * u_zoom;
+    v_radius = a_radius;
+    v_seed = a_seed;
+}
+`;
+
+export const planetFragSrc = `#version 300 es
+precision highp float;
+
+in float v_radius;
+in float v_seed;
+
+out vec4 fragColor;
+
+float hash(float n) { return fract(sin(n) * 43758.5453123); }
+
+void main() {
+    vec2 coord = gl_PointCoord - 0.5;
+    float dist = length(coord);
+    if (dist > 0.5) discard;
+
+    // Simple procedural texture (shading + some spots)
+    float light = dot(normalize(vec3(coord, 1.0)), normalize(vec3(1.0, -1.0, 2.0)));
+    light = clamp(light * 0.5 + 0.5, 0.0, 1.0);
+    
+    // Pseudo-random craters/spots
+    float spots = 0.0;
+    for(int i=0; i<3; i++) {
+        float fi = float(i);
+        vec2 p = coord * (5.0 + fi * 2.0);
+        spots += smoothstep(0.1, 0.0, length(fract(p + hash(v_seed + fi)) - 0.5));
+    }
+
+    float color = mix(0.9, 0.4, 1.0 - light);
+    color -= spots * 0.1;
+    
+    // Atmosphere/glow edge
+    float edge = smoothstep(0.45, 0.5, dist);
+    fragColor = vec4(vec3(color), 1.0 - edge);
+}
+`;
+
 // ─── Station renderer ────────────────────────────────────
 export const stationVertSrc = `#version 300 es
 precision highp float;
