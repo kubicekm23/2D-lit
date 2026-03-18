@@ -6,9 +6,9 @@
 
 body {
     overflow: hidden;
-    background: #050510;
+    background: #fff;
     font-family: 'Courier New', monospace;
-    color: #ccd;
+    color: #000;
 }
 
 #gameCanvas {
@@ -57,9 +57,9 @@ body {
 }
 
 #hud-station {
-    background: rgba(5, 5, 16, 0.7);
+    background: rgba(255, 255, 255, 0.8);
     padding: 4px 12px;
-    border: 1px solid #334;
+    border: 1px solid #999;
 }
 
 /* ─── Station overlay ─────────────────── */
@@ -69,7 +69,7 @@ body {
     left: 0;
     width: 100vw;
     height: 100vh;
-    background: rgba(5, 5, 16, 0.95);
+    background: rgba(255, 255, 255, 0.95);
     z-index: 100;
     display: flex;
     align-items: center;
@@ -81,17 +81,16 @@ body {
     max-width: 800px;
     max-height: 90vh;
     overflow-y: auto;
-    border: 1px solid #445;
+    border: 2px solid #000;
     padding: 24px;
-    background: #0a0a1a;
-    color: #ccd;
+    background: #fff;
 }
 
 .station-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    border-bottom: 1px solid #334;
+    border-bottom: 1px solid #000;
     padding-bottom: 12px;
     margin-bottom: 16px;
 }
@@ -108,17 +107,16 @@ body {
 
 .tab-btn {
     padding: 8px 20px;
-    border: 1px solid #445;
-    background: #0a0a1a;
-    color: #ccd;
+    border: 1px solid #000;
+    background: #fff;
     cursor: pointer;
     font-family: inherit;
     font-size: 13px;
 }
 
 .tab-btn.active {
-    background: #334;
-    color: #eef;
+    background: #000;
+    color: #fff;
 }
 
 .station-content {
@@ -128,15 +126,14 @@ body {
 .station-footer {
     margin-top: 24px;
     text-align: center;
-    border-top: 1px solid #334;
+    border-top: 1px solid #000;
     padding-top: 16px;
 }
 
 .btn-launch {
     padding: 12px 48px;
-    border: 1px solid #4a6;
-    background: #0a0a1a;
-    color: #4a6;
+    border: 2px solid #000;
+    background: #fff;
     font-family: inherit;
     font-size: 16px;
     cursor: pointer;
@@ -145,8 +142,8 @@ body {
 }
 
 .btn-launch:hover {
-    background: #4a6;
-    color: #0a0a1a;
+    background: #000;
+    color: #fff;
 }
 
 /* Market */
@@ -158,7 +155,7 @@ body {
 
 .market-section h4 {
     margin-bottom: 8px;
-    border-bottom: 1px solid #334;
+    border-bottom: 1px solid #ccc;
     padding-bottom: 4px;
 }
 
@@ -171,33 +168,30 @@ body {
 .market-table th,
 .market-table td {
     padding: 4px 8px;
-    border-bottom: 1px solid #223;
+    border-bottom: 1px solid #eee;
     text-align: left;
 }
 
 .qty-input {
     width: 50px;
     padding: 2px 4px;
-    border: 1px solid #445;
-    background: #111;
-    color: #ccd;
+    border: 1px solid #999;
     font-family: inherit;
     font-size: 12px;
 }
 
 .btn-trade {
     padding: 2px 10px;
-    border: 1px solid #445;
-    background: #0a0a1a;
-    color: #ccd;
+    border: 1px solid #000;
+    background: #fff;
     cursor: pointer;
     font-family: inherit;
     font-size: 12px;
 }
 
 .btn-trade:hover {
-    background: #334;
-    color: #eef;
+    background: #000;
+    color: #fff;
 }
 
 /* Shipyard */
@@ -209,8 +203,8 @@ body {
 
 .current-ship {
     padding: 8px;
-    border: 1px solid #445;
-    background: #111125;
+    border: 1px solid #000;
+    background: #f5f5f5;
 }
 
 .current-ship h4 {
@@ -224,13 +218,12 @@ body {
 }
 
 .ship-card {
-    border: 1px solid #334;
+    border: 1px solid #999;
     padding: 10px;
-    background: #0d0d1d;
 }
 
 .ship-card.owned {
-    border-color: #8af;
+    border-color: #000;
     border-width: 2px;
 }
 
@@ -240,7 +233,7 @@ body {
 
 .ship-card p {
     font-size: 12px;
-    color: #889;
+    color: #666;
     margin-bottom: 6px;
 }
 
@@ -254,16 +247,15 @@ body {
 
 .btn-buy-ship {
     padding: 4px 12px;
-    border: 1px solid #445;
-    background: #0a0a1a;
-    color: #ccd;
+    border: 1px solid #000;
+    background: #fff;
     cursor: pointer;
     font-family: inherit;
 }
 
 .btn-buy-ship:hover {
-    background: #334;
-    color: #eef;
+    background: #000;
+    color: #fff;
 }
 
 /* Services */
@@ -274,21 +266,20 @@ body {
 .services-section button {
     padding: 8px 24px;
     margin-top: 8px;
-    border: 1px solid #445;
-    background: #0a0a1a;
-    color: #ccd;
+    border: 1px solid #000;
+    background: #fff;
     cursor: pointer;
     font-family: inherit;
 }
 
 .services-section button:hover:not(:disabled) {
-    background: #334;
-    color: #eef;
+    background: #000;
+    color: #fff;
 }
 
 .services-section button:disabled {
-    color: #556;
-    border-color: #334;
+    color: #999;
+    border-color: #999;
     cursor: default;
 }
 
@@ -299,7 +290,7 @@ body {
     left: 0;
     width: 100vw;
     height: 100vh;
-    background: rgba(5, 5, 16, 0.97);
+    background: rgba(255, 255, 255, 0.97);
     z-index: 90;
     display: flex;
     align-items: center;
@@ -309,7 +300,7 @@ body {
 .map-container {
     width: 90%;
     height: 85%;
-    border: 1px solid #445;
+    border: 2px solid #000;
 }
 
 #map-canvas {
@@ -329,7 +320,7 @@ body {
     left: 0;
     width: 100vw;
     height: 100vh;
-    background: rgba(10, 0, 0, 0.92);
+    background: rgba(0, 0, 0, 0.85);
     z-index: 110;
     display: flex;
     align-items: center;
@@ -339,28 +330,28 @@ body {
 .stranded-panel {
     max-width: 500px;
     width: 90%;
-    border: 1px solid #633;
+    border: 2px solid #c00;
     padding: 32px;
-    background: #0a0808;
-    color: #daa;
+    background: #fff;
+    color: #000;
     text-align: center;
 }
 
 .stranded-header h2 {
     font-size: 28px;
-    color: #f55;
+    color: #c00;
     letter-spacing: 6px;
     margin-bottom: 16px;
 }
 
 .stranded-header p {
     margin-bottom: 8px;
-    color: #a88;
+    color: #333;
 }
 
 .stranded-coords {
     font-size: 12px;
-    color: #776 !important;
+    color: #666 !important;
 }
 
 .stranded-content {
@@ -369,15 +360,14 @@ body {
 }
 
 .stranded-content h4 {
-    border-bottom: 1px solid #433;
+    border-bottom: 1px solid #ccc;
     padding-bottom: 6px;
     margin-bottom: 12px;
-    color: #daa;
 }
 
 .stranded-content p {
     font-size: 13px;
-    color: #a88;
+    color: #333;
     margin-bottom: 8px;
 }
 
@@ -391,9 +381,9 @@ body {
     width: 100%;
     padding: 10px 16px;
     margin-bottom: 6px;
-    border: 1px solid #554;
-    background: #151010;
-    color: #cca;
+    border: 1px solid #000;
+    background: #fff;
+    color: #000;
     cursor: pointer;
     font-family: inherit;
     font-size: 13px;
@@ -402,9 +392,8 @@ body {
 
 .btn-respawn-ship:hover,
 #btn-respawn-current:hover {
-    background: #2a2020;
-    border-color: #886;
-    color: #eec;
+    background: #000;
+    color: #fff;
 }
 
 .stranded-current {

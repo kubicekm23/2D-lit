@@ -18,20 +18,21 @@ export function initShip() {
     loc.zoom = gl.getUniformLocation(program, 'u_zoom');
     loc.scale = gl.getUniformLocation(program, 'u_scale');
 
-    // Simple arrow/triangle shape pointing right (rotation 0 = right)
+    // Rectangular ship with pointed front (rotation 0 = right)
     const verts = new Float32Array([
-        // Main body triangle
+        // Main rectangular body (two triangles)
+        -0.6, -0.35,
+         0.4, -0.35,
+         0.4,  0.35,
+
+        -0.6, -0.35,
+         0.4,  0.35,
+        -0.6,  0.35,
+
+        // Pointed nose (front wedge)
+         0.4, -0.25,
          1.0,  0.0,
-        -0.7,  0.5,
-        -0.7, -0.5,
-        // Left wing
-        -0.3,  0.0,
-        -0.7,  0.5,
-        -0.5,  0.0,
-        // Right wing
-        -0.3,  0.0,
-        -0.7, -0.5,
-        -0.5,  0.0,
+         0.4,  0.25,
     ]);
 
     vertexCount = verts.length / 2;

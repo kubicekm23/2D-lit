@@ -56,9 +56,9 @@ void main() {
 
     if (alpha < 0.01) discard;
 
-    // Bright stars on dark background with slight blue-white tint
-    float b = v_brightness;
-    fragColor = vec4(b * 0.9 + 0.1, b * 0.9 + 0.1, b * 0.95 + 0.05, alpha);
+    // Grey tone on white background
+    float grey = 1.0 - v_brightness;
+    fragColor = vec4(grey, grey, grey, alpha);
 }
 `;
 
@@ -94,7 +94,7 @@ precision highp float;
 out vec4 fragColor;
 
 void main() {
-    fragColor = vec4(0.85, 0.85, 0.9, 1.0); // Light grey-blue
+    fragColor = vec4(0.0, 0.0, 0.0, 1.0); // Solid black
 }
 `;
 
@@ -150,6 +150,6 @@ precision highp float;
 out vec4 fragColor;
 
 void main() {
-    fragColor = vec4(0.3, 0.3, 0.4, 0.5);
+    fragColor = vec4(0.7, 0.7, 0.7, 0.5);
 }
 `;

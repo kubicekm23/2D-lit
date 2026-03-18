@@ -26,7 +26,7 @@ export function updateHud(playerState, worldState) {
 
     if (elements.fuel) {
         elements.fuel.textContent = `FUEL: ${Math.round(fuelPct)}%`;
-        elements.fuel.style.color = fuelPct < 20 ? '#f55' : '#ccd';
+        elements.fuel.style.color = fuelPct < 20 ? '#c00' : '#000';
     }
 
     if (elements.credits) {
@@ -52,17 +52,17 @@ export function updateHud(playerState, worldState) {
         if (nearestStation && minDist < ATC_RANGE) {
             if (minDist < LANDING_RANGE && speed < LANDING_MAX_SPEED) {
                 elements.stationInfo.textContent = `${nearestStation.name} - ${Math.round(minDist)}u - Press F to dock`;
-                elements.stationInfo.style.color = '#0f0';
+                elements.stationInfo.style.color = '#060';
             } else if (minDist < LANDING_RANGE) {
                 elements.stationInfo.textContent = `${nearestStation.name} - ${Math.round(minDist)}u - Slow down to dock`;
-                elements.stationInfo.style.color = '#fa0';
+                elements.stationInfo.style.color = '#960';
             } else {
                 elements.stationInfo.textContent = `${nearestStation.name} - ${Math.round(minDist)}u - Press F to request docking`;
-                elements.stationInfo.style.color = '#8af';
+                elements.stationInfo.style.color = '#000';
             }
         } else if (nearestStation) {
             elements.stationInfo.textContent = `${nearestStation.name} - ${Math.round(minDist)}u`;
-            elements.stationInfo.style.color = '#667';
+            elements.stationInfo.style.color = '#666';
         } else {
             elements.stationInfo.textContent = '';
         }
