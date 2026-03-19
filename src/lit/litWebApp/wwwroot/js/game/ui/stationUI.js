@@ -11,19 +11,21 @@ export function initStationUI() {
 
 export async function openStation(stationId) {
     currentStationId = stationId;
+    overlay.innerHTML = '<div class="station-panel"><div class="station-header"><h2>LOADING...</h2></div></div>';
+    overlay.style.display = 'flex';
 
     try {
         stationData = await api.getStation(stationId);
     } catch (e) {
         console.error('Failed to load station:', e);
-        return;
+        overlay.innerHTML = `<div class="station-panel"><div class="station-header"><h2>ERROR</h2></div><p>${e.message}</p><button onclick="location.reload()">Retry</button></div>`;
+        throw e;
     }
 
     playerState.isDocked = true;
     playerState.dockedStationId = stationId;
 
     renderStationUI();
-    overlay.style.display = 'flex';
 }
 
 export function closeStation() {

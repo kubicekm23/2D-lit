@@ -19,6 +19,9 @@ let onFrameCallback = null;
 let _overlayActive = false;
 export function setOverlayActive(v) { _overlayActive = v; }
 
+// Track render errors for debug overlay
+export const _renderErrors = {};
+
 export function startGameLoop(canvasEl, onFrame) {
     canvas = canvasEl;
     running = true;
@@ -50,16 +53,28 @@ function loop(timestamp) {
     const gl = getGL();
     gl.clear(gl.COLOR_BUFFER_BIT);
 
-    renderBackground(camera, playerState, getSpeedFraction());
-    renderPlanets(camera, worldState);
-    renderStations(camera, worldState, playerState);
+    try {
+        renderBackground(camera, playerState, getSpeedFraction());
+    } catch (e) { if (!_renderErrors.bg) { _renderErrors.bg = e.message; console.error('renderBackground error:', e); } }
+
+    try {
+        renderPlanets(camera, worldState);
+    } catch (e) { if (!_renderErrors.planet) { _renderErrors.planet = e.message; console.error('renderPlanets error:', e); } }
+
+    try {
+        renderStations(camera, worldState, playerState);
+    } catch (e) { if (!_renderErrors.station) { _renderErrors.station = e.message; console.error('renderStations error:', e); } }
 
     if (!playerState.isDocked && !_overlayActive) {
-        renderShip(camera, playerState);
+        try {
+            renderShip(camera, playerState);
+        } catch (e) { if (!_renderErrors.ship) { _renderErrors.ship = e.message; console.error('renderShip error:', e); } }
     }
 
     if (!_overlayActive) {
-        updateHud(playerState, worldState);
+        try {
+            updateHud(playerState, worldState);
+        } catch (e) { if (!_renderErrors.hud) { _renderErrors.hud = e.message; console.error('updateHud error:', e); } }
     }
 
     if (onFrameCallback) onFrameCallback(dt);

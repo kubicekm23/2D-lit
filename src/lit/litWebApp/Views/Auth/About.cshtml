@@ -3,74 +3,167 @@
 }
 
 <style>
-    .about-page {
-        max-width: 800px;
-        margin: 0 auto;
+    /* ─── Hero ─── */
+    .about-hero {
+        background: #000;
+        color: #fff;
+        margin: -2rem -12px 3rem;
+        padding: 4rem 2rem;
     }
-    .about-page h1 {
-        font-size: 2.5rem;
-        font-weight: bold;
-        margin-bottom: 0.25rem;
+
+    .about-hero h1 {
+        font-size: clamp(2.5rem, 8vw, 5rem);
+        font-weight: 700;
+        letter-spacing: 8px;
+        text-transform: uppercase;
+        margin-bottom: 0.5rem;
+        line-height: 1;
     }
-    .about-page .subtitle {
-        font-size: 1.1rem;
-        color: #6c757d;
-        margin-bottom: 2rem;
+
+    .about-hero h1 span {
+        color: #D71921;
     }
-    .about-page h2 {
-        font-size: 1.3rem;
-        border-bottom: 1px solid #dee2e6;
-        padding-bottom: 0.5rem;
-        margin-top: 2rem;
-        margin-bottom: 1rem;
-    }
-    .about-page p, .about-page li {
-        line-height: 1.7;
-    }
-    .about-page .game-tag {
-        display: inline-block;
-        background: #e9ecef;
-        color: #495057;
-        padding: 2px 10px;
-        border-radius: 3px;
+
+    .about-hero .subtitle {
         font-size: 0.85rem;
-        margin: 2px 4px 2px 0;
+        color: #555;
+        letter-spacing: 2px;
+        text-transform: uppercase;
+        margin-top: 1.5rem;
+        margin-bottom: 0;
     }
+
+    /* ─── Tags ─── */
+    .tag-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+        margin-bottom: 2.5rem;
+    }
+
+    .game-tag {
+        display: inline-block;
+        border: 1px solid #000;
+        padding: 3px 10px;
+        font-size: 0.7rem;
+        letter-spacing: 1.5px;
+        text-transform: uppercase;
+        color: #000;
+    }
+
+    /* ─── Section headings ─── */
+    .about-page h2 {
+        font-size: 0.7rem;
+        letter-spacing: 4px;
+        text-transform: uppercase;
+        color: #888;
+        margin-top: 3rem;
+        margin-bottom: 1.5rem;
+        padding-bottom: 0.75rem;
+        border-bottom: 1px solid #000;
+    }
+
+    /* ─── Text ─── */
+    .about-page p, .about-page li {
+        line-height: 1.8;
+        font-size: 0.9rem;
+    }
+
+    .about-page ul {
+        padding-left: 1.2rem;
+    }
+
+    .about-page li {
+        margin-bottom: 0.4rem;
+    }
+
+    /* ─── Screenshot placeholders ─── */
     .screenshot-placeholder {
-        background: #f8f9fa;
-        border: 2px dashed #dee2e6;
-        border-radius: 8px;
-        padding: 3rem 1rem;
+        background-image: radial-gradient(circle, #ccc 1px, transparent 1px);
+        background-size: 14px 14px;
+        background-color: #f5f5f5;
+        border: 1px solid #000;
+        padding: 4rem 1rem;
         text-align: center;
-        color: #adb5bd;
+        color: #aaa;
         margin-bottom: 1rem;
+        font-size: 0.75rem;
+        letter-spacing: 1px;
+        text-transform: uppercase;
     }
+
     .screenshot-grid {
         display: grid;
         grid-template-columns: 1fr 1fr;
-        gap: 1rem;
+        gap: 8px;
         margin-bottom: 1rem;
     }
+
+    .screenshot-grid .screenshot-placeholder {
+        padding: 2.5rem 0.5rem;
+    }
+
+    /* ─── Requirements table ─── */
     .req-table {
         width: 100%;
         border-collapse: collapse;
+        font-size: 0.85rem;
     }
+
+    .req-table tr:first-child td {
+        border-top: 1px solid #000;
+    }
+
     .req-table td {
-        padding: 0.5rem 1rem;
-        border-bottom: 1px solid #dee2e6;
+        padding: 0.75rem 0.5rem;
+        border-bottom: 1px solid #e0e0e0;
+        vertical-align: top;
     }
+
     .req-table td:first-child {
-        color: #6c757d;
-        width: 200px;
-        font-weight: bold;
+        font-size: 0.7rem;
+        letter-spacing: 1.5px;
+        text-transform: uppercase;
+        color: #888;
+        width: 180px;
+        padding-right: 1.5rem;
+    }
+
+    /* ─── CTA block ─── */
+    .about-cta {
+        margin: 3rem 0 2rem;
+        padding: 3rem 2rem;
+        background: #f5f5f5;
+        border: 1px solid #000;
+        text-align: center;
+    }
+
+    .about-cta .price-note {
+        margin-top: 1rem;
+        font-size: 0.7rem;
+        letter-spacing: 1px;
+        color: #888;
+        text-transform: uppercase;
+    }
+
+    /* ─── Red divider ─── */
+    .red-line {
+        border: none;
+        border-top: 2px solid #D71921;
+        margin: 0;
+        width: 40px;
     }
 </style>
 
-<div class="about-page">
-    <h1>2D-lit</h1>
-    <p class="subtitle">Protože kdo potřebuje třetí dimenzi, když má dva monitory?</p>
+<div class="about-hero">
+    <h1>2D<span>·</span>LIT</h1>
+    <hr class="red-line mt-3 mb-3" />
+    <p class="subtitle">Vesmírná obchodní hra — přímo v prohlížeči</p>
+</div>
 
-    <div class="mb-3">
+<div class="about-page">
+
+    <div class="tag-row">
         <span class="game-tag">2D</span>
         <span class="game-tag">Vesmír</span>
         <span class="game-tag">Obchodování</span>
@@ -79,7 +172,6 @@
         <span class="game-tag">Lodě go brrr</span>
     </div>
 
-    <h2>O hře</h2>
     <p>
         <strong>2D-lit</strong> je vesmírná obchodní hra inspirovaná klasikami jako Elite,
         ale bez zbytečného třetího rozměru, který vás stejně jen bolí z hlavy.
@@ -96,21 +188,13 @@
 
     <h2>Snímky obrazovky</h2>
     <div class="screenshot-placeholder">
-        <p>[ hlavní snímek — vesmírná mapa ]</p>
+        hlavní snímek — vesmírná mapa
     </div>
     <div class="screenshot-grid">
-        <div class="screenshot-placeholder">
-            <p>[ obchodování na stanici ]</p>
-        </div>
-        <div class="screenshot-placeholder">
-            <p>[ flotila lodí ]</p>
-        </div>
-        <div class="screenshot-placeholder">
-            <p>[ navigace mezi stanicemi ]</p>
-        </div>
-        <div class="screenshot-placeholder">
-            <p>[ detail lodi ]</p>
-        </div>
+        <div class="screenshot-placeholder">obchodování na stanici</div>
+        <div class="screenshot-placeholder">flotila lodí</div>
+        <div class="screenshot-placeholder">navigace</div>
+        <div class="screenshot-placeholder">detail lodi</div>
     </div>
 
     <h2>Hlavní vlastnosti</h2>
@@ -150,17 +234,16 @@
             <td>Internetové připojení. Doporučujeme nepřipojovat se přes poštovního holuba.</td>
         </tr>
         <tr>
-            <td>Další poznámky</td>
+            <td>Poznámky</td>
             <td>Káva doporučena, ale není vyžadována. Cookies jsou povinné (ty digitální).</td>
         </tr>
     </table>
 
-    <div class="mt-4 mb-4 text-center">
-        <a asp-action="Register" class="btn btn-dark btn-lg" style="padding: 10px 40px;">
+    <div class="about-cta">
+        <a asp-action="Register" class="btn btn-dark btn-lg">
             Hrát zdarma
         </a>
-        <p class="mt-2 text-muted" style="font-size: 0.85rem;">
-            Cena: Zdarma. Jako skutečně zdarma. Ne "zdarma*".
-        </p>
+        <p class="price-note">Zdarma · Jako skutečně zdarma · Ne "zdarma*"</p>
     </div>
+
 </div>

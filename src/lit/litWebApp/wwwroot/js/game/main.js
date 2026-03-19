@@ -1,11 +1,11 @@
-import { initWebGL } from './renderer/webgl.js';
+import { initWebGL, getGL, getShaderErrors } from './renderer/webgl.js';
 import { initInput, wasPressed, clearFrameInput } from './engine/input.js';
 import { initBackground } from './renderer/backgroundRenderer.js';
 import { initShip } from './renderer/shipRenderer.js';
 import { initStations } from './renderer/stationRenderer.js';
 import { initPlanets } from './renderer/planetRenderer.js';
 import { initHud } from './renderer/hudRenderer.js';
-import { startGameLoop, setOverlayActive } from './engine/gameLoop.js';
+import { startGameLoop, setOverlayActive, _renderErrors } from './engine/gameLoop.js';
 import { worldState, loadWorld } from './world/worldState.js';
 import { playerState, loadPlayer, getSpeed } from './world/playerState.js';
 import { setWorldBounds, AUTOSAVE_INTERVAL, ATC_RANGE } from './utils/constants.js';
@@ -18,6 +18,7 @@ import { initDockingMinigame, openDockingMinigame, closeDockingMinigame, isDocki
 import { initPauseMenu, openPauseMenu, closePauseMenu, isPauseOpen } from './ui/pauseMenu.js';
 import { initATC, showATC, hideATC } from './ui/atcUI.js';
 import { getNearestStation } from './renderer/hudRenderer.js';
+import { camera } from './engine/camera.js';
 
 async function init() {
     const canvas = document.getElementById('gameCanvas');
@@ -73,22 +74,51 @@ async function init() {
         const sid = Number(playerState.dockedStationId);
         const dockedStation = worldState.stations.find(s => s.id === sid);
         if (dockedStation) {
+            console.log('Syncing position to docked station:', dockedStation.name);
             playerState.ship.x = dockedStation.x;
             playerState.ship.y = dockedStation.y;
             playerState.ship.vx = 0;
             playerState.ship.vy = 0;
+            
+            try {
+                await openStation(sid);
+            } catch (err) {
+                console.error('Failed to open station UI:', err);
+            }
+        } else {
+            console.warn('Docked station ID not found in world data:', sid);
         }
-        await openStation(sid);
+
         if (!isStationOpen()) {
-            // Station UI failed — undock so the player isn't stuck on a blank screen
-            console.warn('Station UI failed to open, undocking player');
+            console.warn('Station UI is not open, undocking player to avoid blank screen');
             playerState.isDocked = false;
             playerState.dockedStationId = null;
         }
     }
 
+    // Debug overlay — shows rendering state on screen (remove once fixed)
+    const dbg = document.createElement('div');
+    dbg.id = 'debug-overlay';
+    dbg.style.cssText = 'position:fixed;bottom:60px;left:8px;background:rgba(0,0,0,0.85);color:#0f0;font:11px monospace;padding:8px 12px;z-index:9999;pointer-events:none;white-space:pre;border-radius:4px;';
+    document.body.appendChild(dbg);
+    const gl = getGL();
+    const shaderErrs = getShaderErrors();
+    let frameCount = 0;
+
     // Start game loop
     startGameLoop(canvas, (dt) => {
+        // Update debug overlay every 30 frames
+        if (++frameCount % 30 === 1) {
+            dbg.textContent = [
+                `WebGL: ${gl._isWebGL2 ? '2' : '1'}  Canvas: ${canvas.width}x${canvas.height}`,
+                `Camera: ${camera.width.toFixed(0)}x${camera.height.toFixed(0)} z=${camera.zoom.toFixed(2)}`,
+                `Ship: (${playerState.ship.x.toFixed(0)}, ${playerState.ship.y.toFixed(0)}) docked=${playerState.isDocked}`,
+                `Stations: ${worldState.stations.length}  Planets: ${worldState.planets.length}`,
+                `StationUI: ${isStationOpen()}  Overlay: ${isDockingOpen()}`,
+                shaderErrs.length ? `SHADER ERRORS: ${shaderErrs.join('; ')}` : 'Shaders: OK',
+                Object.keys(_renderErrors).length ? `RENDER ERRORS: ${JSON.stringify(_renderErrors)}` : '',
+            ].filter(Boolean).join('\n');
+        }
         // Auto-save
         if (!playerState.isDocked) {
             saveTimer += dt * 1000;

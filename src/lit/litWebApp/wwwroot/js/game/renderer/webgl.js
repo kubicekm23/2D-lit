@@ -1,4 +1,7 @@
 let gl = null;
+let _shaderErrors = [];
+
+export function getShaderErrors() { return _shaderErrors; }
 
 export function initWebGL(canvas) {
     gl = canvas.getContext('webgl2', { antialias: true });
@@ -19,7 +22,6 @@ export function initWebGL(canvas) {
             gl.bindVertexArray = (vao) => vaoExt.bindVertexArrayOES(vao);
             gl.deleteVertexArray = (vao) => vaoExt.deleteVertexArrayOES(vao);
         } else {
-            // Hard fallback: dummy VAO support (will cause issues but prevents immediate crash)
             gl.createVertexArray = () => ({});
             gl.bindVertexArray = () => {};
             console.warn('VAO extension not supported on WebGL 1');
@@ -54,14 +56,15 @@ export function compileShader(source, type) {
     let finalSource = source;
     if (!gl._isWebGL2) {
         // Simple downgrade version 300 es to 100
+        // Order matters: remove fragColor output BEFORE replacing remaining out keywords
         finalSource = source
             .replace('#version 300 es', '')
-            .replace(/in\s+/g, type === gl.VERTEX_SHADER ? 'attribute ' : 'varying ')
-            .replace(/out\s+/g, 'varying ')
-            .replace(/out\s+vec4\s+fragColor;/g, '')
-            .replace(/fragColor\s*=/g, 'gl_FragColor =')
-            .replace(/texture\(/g, 'texture2D(');
-        
+            .replace(/out\s+vec4\s+fragColor\s*;/g, '')       // remove fragColor output first
+            .replace(/\bfragColor\s*=/g, 'gl_FragColor =')    // redirect writes
+            .replace(/\bin\s+/g, type === gl.VERTEX_SHADER ? 'attribute ' : 'varying ')
+            .replace(/\bout\s+/g, 'varying ')
+            .replace(/\btexture\s*\(/g, 'texture2D(');
+
         // Precision is required in frag shaders in WebGL 1
         if (type === gl.FRAGMENT_SHADER && !finalSource.includes('precision ')) {
             finalSource = 'precision highp float;\n' + finalSource;
@@ -72,8 +75,11 @@ export function compileShader(source, type) {
     gl.shaderSource(shader, finalSource);
     gl.compileShader(shader);
     if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
-        console.error('Shader compile error:', gl.getShaderInfoLog(shader));
+        const err = gl.getShaderInfoLog(shader);
+        const typeName = type === gl.VERTEX_SHADER ? 'VERT' : 'FRAG';
+        console.error(`Shader compile error (${typeName}):`, err);
         console.log('Source:', finalSource);
+        _shaderErrors.push(`${typeName}: ${err}`);
         gl.deleteShader(shader);
         return null;
     }

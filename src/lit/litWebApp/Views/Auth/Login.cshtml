@@ -2,9 +2,51 @@
     ViewData["Title"] = "Přihlášení";
 }
 
+<style>
+    .login-brand {
+        text-align: center;
+        margin-bottom: 2.5rem;
+    }
+    .login-brand .brand-name {
+        font-size: 1.8rem;
+        font-weight: 700;
+        letter-spacing: 6px;
+        text-transform: uppercase;
+        display: block;
+    }
+    .login-brand .brand-dot {
+        color: #D71921;
+    }
+    .login-brand .brand-sub {
+        font-size: 0.65rem;
+        letter-spacing: 3px;
+        text-transform: uppercase;
+        color: #888;
+        margin-top: 4px;
+        display: block;
+    }
+    .login-divider {
+        border: none;
+        border-top: 1px solid #000;
+        margin: 2rem 0 1.5rem;
+    }
+    .form-section-label {
+        font-size: 0.65rem;
+        letter-spacing: 3px;
+        text-transform: uppercase;
+        color: #888;
+        margin-bottom: 1.5rem;
+    }
+</style>
+
 <div class="row justify-content-center">
     <div class="col-md-4">
-        <h2>Přihlášení</h2>
+        <div class="login-brand">
+            <span class="brand-name">2D<span class="brand-dot">·</span>LIT</span>
+            <span class="brand-sub">Vesmírná obchodní hra</span>
+        </div>
+        <hr class="login-divider" />
+        <p class="form-section-label">Přihlášení</p>
         @if (ViewBag.Error != null)
         {
             <div class="alert alert-danger">@ViewBag.Error</div>
