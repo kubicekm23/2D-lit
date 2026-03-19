@@ -70,18 +70,21 @@ async function init() {
 
     // If player starts docked, snap position to station and open station UI
     if (playerState.isDocked && playerState.dockedStationId) {
-        const sid = parseInt(playerState.dockedStationId);
+        const sid = Number(playerState.dockedStationId);
         const dockedStation = worldState.stations.find(s => s.id === sid);
         if (dockedStation) {
-            console.log('Player is docked at:', dockedStation.name);
             playerState.ship.x = dockedStation.x;
             playerState.ship.y = dockedStation.y;
             playerState.ship.vx = 0;
             playerState.ship.vy = 0;
-        } else {
-            console.warn('Docked station not found in world data:', sid);
         }
         await openStation(sid);
+        if (!isStationOpen()) {
+            // Station UI failed — undock so the player isn't stuck on a blank screen
+            console.warn('Station UI failed to open, undocking player');
+            playerState.isDocked = false;
+            playerState.dockedStationId = null;
+        }
     }
 
     // Start game loop
