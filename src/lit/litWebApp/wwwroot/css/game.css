@@ -79,11 +79,18 @@ body {
 .station-panel {
     width: 90%;
     max-width: 800px;
-    max-height: 90vh;
-    overflow-y: auto;
+    height: 90vh;
+    display: flex;
+    flex-direction: column;
     border: 2px solid #000;
     padding: 24px;
     background: #fff;
+}
+
+.station-content {
+    flex: 1;
+    overflow-y: auto;
+    min-height: 0;
 }
 
 .station-header {
@@ -119,9 +126,6 @@ body {
     color: #fff;
 }
 
-.station-content {
-    min-height: 300px;
-}
 
 .station-footer {
     margin-top: 24px;
