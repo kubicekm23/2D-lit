@@ -202,7 +202,7 @@ function bindTabEvents(tab) {
             btn.addEventListener('click', async () => {
                 const cargoId = parseInt(btn.dataset.cargo);
                 const action = btn.dataset.action;
-                const input = overlay.querySelector(\`.qty-input[data-cargo="\${cargoId}"][data-action="\${action}"]\`);
+                const input = overlay.querySelector(`.qty-input[data-cargo="${cargoId}"][data-action="${action}"]`);
                 const qty = parseInt(input?.value || '1');
 
                 try {
