@@ -30,51 +30,58 @@ async function init() {
     initWebGL(canvas);
 
     // 2. Load game data from server
+    console.log('Loading game data...');
     const [worldData, playerData] = await Promise.all([
         api.getWorld(),
         api.getPlayer(),
     ]);
 
     if (!worldData || !playerData) {
-        throw new Error('Failed to load world or player data');
+        throw new Error('Server returned invalid data');
     }
+    console.log('Data loaded. World stations:', worldData.stations?.length);
 
     loadWorld(worldData);
     loadPlayer(playerData);
     setWorldBounds(worldData.minX, worldData.maxX, worldData.minY, worldData.maxY);
 
     // 3. Init Renderers and UI
-    initBackground();
-    initShip();
-    initStations();
-    initPlanets();
-    initInput();
-    initHud();
-    initStationUI();
-    initMap();
-    initStrandedUI();
-    initDockingMinigame(handleDockSuccess, handleShipDestroyed);
-    initPauseMenu();
-    initATC();
+    console.log('Initializing renderers...');
+    try {
+        initBackground();
+        initShip();
+        initStations();
+        initPlanets();
+        initInput();
+        initHud();
+        initStationUI();
+        initMap();
+        initStrandedUI();
+        initDockingMinigame(handleDockSuccess, handleShipDestroyed);
+        initPauseMenu();
+        initATC();
+    } catch (err) {
+        console.error('Renderer init failed:', err);
+        throw new Error('Graphics initialization failed: ' + err.message);
+    }
 
     // Auto-save timer
     let saveTimer = 0;
 
     // If player starts docked, snap position to station and open station UI
     if (playerState.isDocked && playerState.dockedStationId) {
-        const dockedStation = worldState.stations.find(s => s.id === playerState.dockedStationId);
+        const sid = parseInt(playerState.dockedStationId);
+        const dockedStation = worldState.stations.find(s => s.id === sid);
         if (dockedStation) {
+            console.log('Player is docked at:', dockedStation.name);
             playerState.ship.x = dockedStation.x;
             playerState.ship.y = dockedStation.y;
             playerState.ship.vx = 0;
             playerState.ship.vy = 0;
+        } else {
+            console.warn('Docked station not found in world data:', sid);
         }
-        await openStation(playerState.dockedStationId);
-        if (!isStationOpen()) {
-            console.warn('Station UI failed to open on load, undocking player');
-            playerState.isDocked = false;
-            playerState.dockedStationId = null;
-        }
+        await openStation(sid);
     }
 
     // Start game loop

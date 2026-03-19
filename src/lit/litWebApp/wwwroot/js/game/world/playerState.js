@@ -64,15 +64,15 @@ export function loadPlayer(data) {
         if (s.type) {
             playerState.ship.type = {
                 id: s.type.id,
-                name: s.type.name,
-                cargoHold: s.type.cargoHold,
-                maxSpeed: s.type.maxSpeed,
-                thrustPower: s.type.thrustPower,
-                fuelEfficiency: s.type.fuelEfficiency,
-                turnRate: s.type.turnRate,
-                maxFuel: s.type.maxFuel,
-                price: s.type.price,
-                texture: s.type.texture,
+                name: s.type.name || 'Ship',
+                cargoHold: s.type.cargoHold || 4,
+                maxSpeed: s.type.maxSpeed || 200,
+                thrustPower: s.type.thrustPower || 80,
+                fuelEfficiency: s.type.fuelEfficiency || 0.05,
+                turnRate: s.type.turnRate || 120,
+                maxFuel: s.type.maxFuel || 20,
+                price: s.type.price || 0,
+                texture: s.type.texture || '',
             };
         }
     }
